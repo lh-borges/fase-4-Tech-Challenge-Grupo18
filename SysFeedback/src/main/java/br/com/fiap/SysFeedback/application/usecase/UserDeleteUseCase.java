@@ -2,6 +2,7 @@ package br.com.fiap.SysFeedback.application.usecase;
 
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
 import br.com.fiap.SysFeedback.domain.entity.User;
+import br.com.fiap.SysFeedback.domain.exception.UserNotFoundException;
 import java.util.UUID;
 
 public class UserDeleteUseCase {
@@ -14,7 +15,7 @@ public class UserDeleteUseCase {
 
     public void execute(UUID id) {
         User user = repositoryUserPort.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         repositoryUserPort.delete(user);
     }

@@ -1,5 +1,7 @@
 package br.com.fiap.SysFeedback.infrastructure.config;
 
+import br.com.fiap.SysFeedback.application.repository.RepositoryAvaliacaoPort;
+import br.com.fiap.SysFeedback.application.repository.RepositoryFeedbackPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
 import br.com.fiap.SysFeedback.application.security.PasswordEncoderPort;
 import br.com.fiap.SysFeedback.application.usecase.*;
@@ -38,5 +40,32 @@ public class UseCaseConfig {
     @Bean
     public UserDeleteUseCase userDeleteUseCase(RepositoryUserPort repository) {
         return new UserDeleteUseCase(repository);
+    }
+
+    // ----- Avaliação -----
+
+    @Bean
+    public AvaliacaoCreateUseCase avaliacaoCreateUseCase(RepositoryAvaliacaoPort repository) {
+        return new AvaliacaoCreateUseCase(repository);
+    }
+
+    @Bean
+    public AvaliacaoFindAllUseCase avaliacaoFindAllUseCase(RepositoryAvaliacaoPort repository) {
+        return new AvaliacaoFindAllUseCase(repository);
+    }
+
+    // ----- Feedback -----
+
+    @Bean
+    public FeedbackGenerateUseCase feedbackGenerateUseCase(
+            RepositoryAvaliacaoPort avaliacaoRepository,
+            RepositoryFeedbackPort feedbackRepository) {
+
+        return new FeedbackGenerateUseCase(avaliacaoRepository, feedbackRepository);
+    }
+
+    @Bean
+    public FeedbackFindAllUseCase feedbackFindAllUseCase(RepositoryFeedbackPort repository) {
+        return new FeedbackFindAllUseCase(repository);
     }
 }

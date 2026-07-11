@@ -83,6 +83,12 @@ public class SecurityConfig {
 
                         // 3. Outros contextos do sistema
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // Avaliações: usuário (ALUNO) envia, dono (PROFESSOR/ADMIN) lê
+                        .requestMatchers(HttpMethod.POST, "/avaliacoes/**").hasRole("ALUNO")
+                        .requestMatchers(HttpMethod.GET, "/avaliacoes/**").hasAnyRole("PROFESSOR", "ADMIN")
+
+                        // Feedback consolidado: gerado e lido pelo dono (PROFESSOR/ADMIN)
                         .requestMatchers(HttpMethod.GET, "/feedback/**").hasAnyRole("PROFESSOR", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/feedback/**").hasAnyRole("PROFESSOR", "ADMIN")
 

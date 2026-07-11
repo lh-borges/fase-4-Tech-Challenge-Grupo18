@@ -1,0 +1,259 @@
+{
+  "info": {
+    "name": "SysFeedback - Tech Challenge Fase 4 (Grupo 18)",
+    "description": "Collection com todos os endpoints da API SysFeedback.\n\nFluxo sugerido:\n1. Auth > Registrar (crie ao menos um usuário ALUNO e um PROFESSOR/ADMIN).\n2. Auth > Login (o token é salvo automaticamente na variável de collection {{token}}).\n3. Chame os demais endpoints — o header Authorization: Bearer {{token}} é herdado automaticamente.\n\nRegras de autorização:\n- POST /avaliacoes -> ALUNO\n- GET /avaliacoes, GET/POST /feedback -> PROFESSOR ou ADMIN\n- /users (POST, GET, DELETE) -> ADMIN | PUT /users -> autenticado",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registrar (ALUNO)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aluno Teste\",\n  \"email\": \"aluno@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"ALUNO\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/registrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "registrar"]
+            },
+            "description": "Registra um usuário. Roles válidas: ADMIN, PROFESSOR, ALUNO."
+          }
+        },
+        {
+          "name": "Registrar (ADMIN)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Teste\",\n  \"email\": \"admin@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/registrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "registrar"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('token', body.token);",
+                  "    console.log('Token salvo em {{token}}');",
+                  "} else {",
+                  "    console.log('Login falhou:', pm.response.code);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aluno@fiap.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Autentica e retorna { token, type }. O token é gravado automaticamente na variável de collection {{token}}."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Criar usuário (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Professor Teste\",\n  \"email\": \"professor@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"PROFESSOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Requer role ADMIN."
+          }
+        },
+        {
+          "name": "Listar usuários (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Requer role ADMIN."
+          }
+        },
+        {
+          "name": "Buscar por email (ADMIN/PROFESSOR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/email/aluno@fiap.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "email", "aluno@fiap.com"]
+            },
+            "description": "Requer role ADMIN ou PROFESSOR."
+          }
+        },
+        {
+          "name": "Atualizar usuário (autenticado)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aluno Atualizado\",\n  \"email\": \"aluno@fiap.com\",\n  \"password\": \"novaSenha123\",\n  \"role\": \"ALUNO\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Requer usuário autenticado. Defina a variável {{userId}} com o id retornado no registro/listagem."
+          }
+        },
+        {
+          "name": "Deletar usuário (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Requer role ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avaliacoes",
+      "item": [
+        {
+          "name": "Criar avaliação (ALUNO)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"A aula estava confusa e sem exemplos praticos\",\n  \"nota\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/avaliacoes",
+              "host": ["{{baseUrl}}"],
+              "path": ["avaliacoes"]
+            },
+            "description": "Requer role ALUNO. A urgencia e derivada da nota (0-3 ALTA, 4-6 MEDIA, 7-10 BAIXA) e a data de envio e registrada no servidor. Faca login com um usuario ALUNO antes."
+          }
+        },
+        {
+          "name": "Listar avaliações (PROFESSOR/ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/avaliacoes",
+              "host": ["{{baseUrl}}"],
+              "path": ["avaliacoes"]
+            },
+            "description": "Requer role PROFESSOR ou ADMIN. Faca login com esse perfil antes."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Gerar feedback do período (PROFESSOR/ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inicio\": \"2026-07-01T00:00:00\",\n  \"fim\": \"2026-07-31T23:59:59\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/feedback",
+              "host": ["{{baseUrl}}"],
+              "path": ["feedback"]
+            },
+            "description": "Requer role PROFESSOR ou ADMIN. Gera e persiste o consolidado do periodo: media das notas, total, avaliacoes por dia e por urgencia."
+          }
+        },
+        {
+          "name": "Listar feedbacks gerados (PROFESSOR/ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/feedback",
+              "host": ["{{baseUrl}}"],
+              "path": ["feedback"]
+            },
+            "description": "Requer role PROFESSOR ou ADMIN."
+          }
+        }
+      ]
+    }
+  ]
+}

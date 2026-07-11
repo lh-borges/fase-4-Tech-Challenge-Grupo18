@@ -24,13 +24,13 @@ public class UserPersistenceMapper {
         if (entity == null) {
             return null;
         }
-        User user = new User(
+        return new User(
+                entity.getId(),
                 entity.getName(),
                 entity.getEmail(),
                 entity.getPassword(),
-                entity.getRole()
+                entity.getRole(),
+                entity.getCreatedAt()
         );
-        user.setId(entity.getId());
-        return user;
     }
 }

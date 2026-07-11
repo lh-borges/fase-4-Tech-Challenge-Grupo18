@@ -6,6 +6,7 @@ import br.com.fiap.SysFeedback.application.mapper.UserMapper;
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
 import br.com.fiap.SysFeedback.application.security.PasswordEncoderPort;
 import br.com.fiap.SysFeedback.domain.entity.User;
+import br.com.fiap.SysFeedback.domain.exception.EmailAlreadyExistsException;
 
 public class UserCreateUseCase {
 
@@ -21,6 +22,10 @@ public class UserCreateUseCase {
     }
 
     public UserResponseDTO execute(UserRequestDTO user) {
+
+        if (user != null && repositoryUserPort.findByEmail(user.email()).isPresent()) {
+            throw new EmailAlreadyExistsException(user.email());
+        }
 
         User userEntity = UserMapper.toDomain(user);
 

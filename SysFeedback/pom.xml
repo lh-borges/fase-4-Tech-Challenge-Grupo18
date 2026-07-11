@@ -55,6 +55,13 @@
 		<scope>test</scope>
 	</dependency>
 
+	<!-- Banco em memória para os testes (contexto sobe sem Postgres) -->
+	<dependency>
+		<groupId>com.h2database</groupId>
+		<artifactId>h2</artifactId>
+		<scope>test</scope>
+	</dependency>
+
 	<!-- Validation -->
 	<dependency>
 		<groupId>org.springframework.boot</groupId>
@@ -101,6 +108,33 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<!--
+				A partir do JDK 23+ o javac não descobre mais annotation processors
+				pelo classpath automaticamente. Declarar o Lombok em
+				annotationProcessorPaths garante que os getters/construtores sejam
+				gerados no build Maven em qualquer JDK (21 no CI, 25+ local).
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
