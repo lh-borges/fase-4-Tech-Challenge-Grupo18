@@ -69,7 +69,7 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ github.sha }}
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:latest
 
-      - name: Deploy no Cloud Run
+        - name: Deploy no Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE }} \
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ github.sha }} \
@@ -77,6 +77,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --service-account=sa-recebe-feedback@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            --add-cloudsql-instances=${{ env.PROJECT_ID }}:${{ env.REGION }}:db-tech-challenge \
             --set-secrets="DB_PASSWORD=db-password:latest,DB_URL=db-url:latest,DB_USER=db-user:latest,ADMIN_EMAIL=admin-email:latest" \
             --set-env-vars="SPRING_PROFILES_ACTIVE=prod" \
             --memory=512Mi \
