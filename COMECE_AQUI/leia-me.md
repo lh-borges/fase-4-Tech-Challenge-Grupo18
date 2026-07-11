@@ -1,6 +1,6 @@
 # Começa por aqui
 
-Essa é a parte de feedback do sistema (avaliação + relatório). É um Spring Boot com Postgres.
+Essa é a parte de feedback do sistema (avaliação + relatório). É um Spring Boot com Postgres.  
 
 ## Rodando na sua máquina
 
