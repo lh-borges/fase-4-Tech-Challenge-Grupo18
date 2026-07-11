@@ -76,6 +76,13 @@
 		<scope>runtime</scope>
 	</dependency>
 
+	<!-- Cloud SQL Socket Factory para conectar via socket no GCP -->
+	<dependency>
+		<groupId>com.google.cloud.sql</groupId>
+		<artifactId>postgres-socket-factory</artifactId>
+		<version>1.19.0</version>
+	</dependency>
+
 	<!-- JWT Dependencies -->
 	<dependency>
 		<groupId>io.jsonwebtoken</groupId>
