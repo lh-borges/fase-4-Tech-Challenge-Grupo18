@@ -68,4 +68,12 @@ public class UseCaseConfig {
     public FeedbackFindAllUseCase feedbackFindAllUseCase(RepositoryFeedbackPort repository) {
         return new FeedbackFindAllUseCase(repository);
     }
+
+    @Bean
+    public RelatorioSemanalGenerateUseCase relatorioSemanalGenerateUseCase(
+            RepositoryAvaliacaoPort avaliacaoRepository,
+            RepositoryFeedbackPort feedbackRepository) {
+
+        return new RelatorioSemanalGenerateUseCase(avaliacaoRepository, feedbackRepository);
+    }
 }
