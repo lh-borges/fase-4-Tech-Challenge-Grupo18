@@ -47,9 +47,18 @@ function preencher(e) {
       <p v-if="error" class="error">{{ error }}</p>
 
       <div class="quick">
-        <span>Acesso rápido (seed):</span>
-        <button type="button" @click="preencher('aluno@fiap.com')">Aluno</button>
-        <button type="button" @click="preencher('professor@fiap.com')">Professor</button>
+        <span>Alunos:</span>
+        <button type="button" @click="preencher('aluno@fiap.com')">Ana</button>
+        <button type="button" @click="preencher('aluno2@fiap.com')">Bruno</button>
+        <button type="button" @click="preencher('aluno3@fiap.com')">Carla</button>
+      </div>
+      <div class="quick">
+        <span>Professores:</span>
+        <button type="button" @click="preencher('professor@fiap.com')">Arquiteto</button>
+        <button type="button" @click="preencher('professor.devops@fiap.com')">DevOps</button>
+      </div>
+      <div class="quick">
+        <span>Admin:</span>
         <button type="button" @click="preencher('admin@fiap.com')">Admin</button>
       </div>
     </form>
