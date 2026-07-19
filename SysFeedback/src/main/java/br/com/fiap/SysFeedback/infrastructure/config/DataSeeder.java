@@ -85,42 +85,54 @@ public class DataSeeder {
                          PasswordEncoder passwordEncoder) {
 
         userRepository.save(novoUsuario("Admin Teste", "admin@fiap.com", "123456", Role.ADMIN, passwordEncoder));
-        UserJpaEntity professor = userRepository.save(
-                novoUsuario("Professor Teste", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
-        UserJpaEntity aluno = userRepository.save(
-                novoUsuario("Aluno Teste", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder));
 
-        // O professor leciona Arquitetura e Banco de Dados; o aluno está matriculado
-        // nas três. DevOps não é lecionada pelo professor (só o admin verá suas avaliações).
-        DisciplinaJpaEntity arquitetura = novaDisciplina("Arquitetura de Software", "ARQ", Set.of(professor), Set.of(aluno));
-        DisciplinaJpaEntity bancoDados = novaDisciplina("Banco de Dados", "BD", Set.of(professor), Set.of(aluno));
-        DisciplinaJpaEntity devops = novaDisciplina("DevOps na Nuvem", "DEVOPS", Set.of(), Set.of(aluno));
+        // Professores: um leciona Arquitetura e Banco de Dados; outro leciona DevOps.
+        UserJpaEntity profArquiteto = userRepository.save(
+                novoUsuario("Professor Arquiteto", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
+        UserJpaEntity profDevops = userRepository.save(
+                novoUsuario("Professora DevOps", "professor.devops@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
+
+        // Alunos com matrículas diferentes.
+        UserJpaEntity ana = userRepository.save(
+                novoUsuario("Ana Aluna", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+        UserJpaEntity bruno = userRepository.save(
+                novoUsuario("Bruno Aluno", "aluno2@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+        UserJpaEntity carla = userRepository.save(
+                novoUsuario("Carla Aluna", "aluno3@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+
+        // Disciplinas com professores e alunos matriculados.
+        DisciplinaJpaEntity arquitetura = novaDisciplina("Arquitetura de Software", "ARQ",
+                Set.of(profArquiteto), Set.of(ana, bruno));
+        DisciplinaJpaEntity bancoDados = novaDisciplina("Banco de Dados", "BD",
+                Set.of(profArquiteto), Set.of(ana, carla));
+        DisciplinaJpaEntity devops = novaDisciplina("DevOps na Nuvem", "DEVOPS",
+                Set.of(profDevops), Set.of(ana, bruno));
         disciplinaRepository.save(arquitetura);
         disciplinaRepository.save(bancoDados);
         disciplinaRepository.save(devops);
 
         List<AvaliacaoJpaEntity> avaliacoes = new ArrayList<>();
-        // Arquitetura de Software
-        avaliacoes.add(novaAvaliacao("Aula muito confusa, o professor pulou etapas importantes", 1, 9, 10, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Nao consegui acompanhar, faltou material de apoio", 3, 9, 2, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Conteudo bom mas o audio estava ruim", 5, 8, 14, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Otima explicacao, gostei bastante", 9, 7, 11, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Excelente aula, muito didatica", 10, 7, 3, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Ritmo muito acelerado, dificil de acompanhar", 2, 5, 20, arquitetura, aluno));
-        avaliacoes.add(novaAvaliacao("Melhor aula do modulo ate agora", 10, 3, 16, arquitetura, aluno));
-        // Banco de Dados
-        avaliacoes.add(novaAvaliacao("Aula ok, poderia ter mais exemplos praticos", 6, 8, 4, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Plataforma travou algumas vezes durante a live", 4, 6, 15, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Professor dominou o assunto, recomendo", 8, 6, 6, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Gostei dos exercicios propostos", 7, 5, 9, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Aula sem preparo, muito improviso", 2, 4, 13, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Bom conteudo, mas comecou atrasada", 6, 4, 1, bancoDados, aluno));
-        avaliacoes.add(novaAvaliacao("Faltou aprofundar nos topicos avancados", 5, 3, 5, bancoDados, aluno));
-        // DevOps na Nuvem (não lecionada pelo professor)
-        avaliacoes.add(novaAvaliacao("Muito boa, tirei todas as minhas duvidas", 9, 2, 12, devops, aluno));
-        avaliacoes.add(novaAvaliacao("Nao recomendo, desorganizada do inicio ao fim", 0, 2, 21, devops, aluno));
-        avaliacoes.add(novaAvaliacao("Aula razoavel, nada excepcional", 6, 1, 8, devops, aluno));
-        avaliacoes.add(novaAvaliacao("Adorei os estudos de caso reais", 8, 0, 7, devops, aluno));
+        // Arquitetura de Software (alunos Ana e Bruno)
+        avaliacoes.add(novaAvaliacao("Aula muito confusa, o professor pulou etapas importantes", 1, 9, 10, arquitetura, ana));
+        avaliacoes.add(novaAvaliacao("Nao consegui acompanhar, faltou material de apoio", 3, 9, 2, arquitetura, bruno));
+        avaliacoes.add(novaAvaliacao("Conteudo bom mas o audio estava ruim", 5, 8, 14, arquitetura, ana));
+        avaliacoes.add(novaAvaliacao("Otima explicacao, gostei bastante", 9, 7, 11, arquitetura, bruno));
+        avaliacoes.add(novaAvaliacao("Excelente aula, muito didatica", 10, 7, 3, arquitetura, ana));
+        avaliacoes.add(novaAvaliacao("Ritmo muito acelerado, dificil de acompanhar", 2, 5, 20, arquitetura, bruno));
+        avaliacoes.add(novaAvaliacao("Melhor aula do modulo ate agora", 10, 3, 16, arquitetura, ana));
+        // Banco de Dados (alunos Ana e Carla)
+        avaliacoes.add(novaAvaliacao("Aula ok, poderia ter mais exemplos praticos", 6, 8, 4, bancoDados, ana));
+        avaliacoes.add(novaAvaliacao("Plataforma travou algumas vezes durante a live", 4, 6, 15, bancoDados, carla));
+        avaliacoes.add(novaAvaliacao("Professor dominou o assunto, recomendo", 8, 6, 6, bancoDados, ana));
+        avaliacoes.add(novaAvaliacao("Gostei dos exercicios propostos", 7, 5, 9, bancoDados, carla));
+        avaliacoes.add(novaAvaliacao("Aula sem preparo, muito improviso", 2, 4, 13, bancoDados, ana));
+        avaliacoes.add(novaAvaliacao("Bom conteudo, mas comecou atrasada", 6, 4, 1, bancoDados, carla));
+        avaliacoes.add(novaAvaliacao("Faltou aprofundar nos topicos avancados", 5, 3, 5, bancoDados, ana));
+        // DevOps na Nuvem (alunos Ana e Bruno)
+        avaliacoes.add(novaAvaliacao("Muito boa, tirei todas as minhas duvidas", 9, 2, 12, devops, ana));
+        avaliacoes.add(novaAvaliacao("Nao recomendo, desorganizada do inicio ao fim", 0, 2, 21, devops, bruno));
+        avaliacoes.add(novaAvaliacao("Aula razoavel, nada excepcional", 6, 1, 8, devops, ana));
+        avaliacoes.add(novaAvaliacao("Adorei os estudos de caso reais", 8, 0, 7, devops, bruno));
 
         avaliacaoRepository.saveAll(avaliacoes);
     }
