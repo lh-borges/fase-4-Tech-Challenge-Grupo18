@@ -1,5 +1,6 @@
 package br.com.fiap.SysFeedback.infrastructure.config;
 
+import br.com.fiap.SysFeedback.application.messaging.NotificadorUrgentePort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryAvaliacaoPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryFeedbackPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
@@ -45,8 +46,11 @@ public class UseCaseConfig {
     // ----- Avaliação -----
 
     @Bean
-    public AvaliacaoCreateUseCase avaliacaoCreateUseCase(RepositoryAvaliacaoPort repository) {
-        return new AvaliacaoCreateUseCase(repository);
+    public AvaliacaoCreateUseCase avaliacaoCreateUseCase(
+            RepositoryAvaliacaoPort repository,
+            NotificadorUrgentePort notificadorUrgentePort) {
+
+        return new AvaliacaoCreateUseCase(repository, notificadorUrgentePort);
     }
 
     @Bean
