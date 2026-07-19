@@ -19,11 +19,14 @@ public class FeedbackGenerateUseCase {
 
     private final RepositoryAvaliacaoPort repositoryAvaliacaoPort;
     private final RepositoryFeedbackPort repositoryFeedbackPort;
+    private final FeedbackMapper feedbackMapper;
 
     public FeedbackGenerateUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort,
-                                   RepositoryFeedbackPort repositoryFeedbackPort) {
+                                   RepositoryFeedbackPort repositoryFeedbackPort,
+                                   FeedbackMapper feedbackMapper) {
         this.repositoryAvaliacaoPort = repositoryAvaliacaoPort;
         this.repositoryFeedbackPort = repositoryFeedbackPort;
+        this.feedbackMapper = feedbackMapper;
     }
 
     public FeedbackResponseDTO execute(FeedbackRequestDTO request) {
@@ -33,6 +36,6 @@ public class FeedbackGenerateUseCase {
         Feedback feedback = Feedback.gerar(request.inicio(), request.fim(), avaliacoes);
         Feedback salvo = repositoryFeedbackPort.save(feedback);
 
-        return FeedbackMapper.toResponse(salvo);
+        return feedbackMapper.toResponse(salvo);
     }
 }

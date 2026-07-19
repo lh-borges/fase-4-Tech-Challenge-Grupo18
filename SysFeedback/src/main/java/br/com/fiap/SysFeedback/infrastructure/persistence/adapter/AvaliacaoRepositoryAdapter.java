@@ -16,19 +16,20 @@ import java.util.List;
 public class AvaliacaoRepositoryAdapter implements RepositoryAvaliacaoPort {
 
     private final AvaliacaoJpaRepository avaliacaoJpaRepository;
+    private final AvaliacaoPersistenceMapper avaliacaoPersistenceMapper;
 
     @Override
     public Avaliacao save(Avaliacao avaliacao) {
-        AvaliacaoJpaEntity entity = AvaliacaoPersistenceMapper.toJpa(avaliacao);
+        AvaliacaoJpaEntity entity = avaliacaoPersistenceMapper.toJpa(avaliacao);
         AvaliacaoJpaEntity saved = avaliacaoJpaRepository.save(entity);
-        return AvaliacaoPersistenceMapper.toDomain(saved);
+        return avaliacaoPersistenceMapper.toDomain(saved);
     }
 
     @Override
     public List<Avaliacao> findAll() {
         return avaliacaoJpaRepository.findAll()
                 .stream()
-                .map(AvaliacaoPersistenceMapper::toDomain)
+                .map(avaliacaoPersistenceMapper::toDomain)
                 .toList();
     }
 
@@ -36,7 +37,7 @@ public class AvaliacaoRepositoryAdapter implements RepositoryAvaliacaoPort {
     public List<Avaliacao> findByPeriodo(LocalDateTime inicio, LocalDateTime fim) {
         return avaliacaoJpaRepository.findByDataEnvioBetween(inicio, fim)
                 .stream()
-                .map(AvaliacaoPersistenceMapper::toDomain)
+                .map(avaliacaoPersistenceMapper::toDomain)
                 .toList();
     }
 }

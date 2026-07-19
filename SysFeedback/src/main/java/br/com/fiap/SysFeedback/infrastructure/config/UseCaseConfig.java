@@ -1,5 +1,8 @@
 package br.com.fiap.SysFeedback.infrastructure.config;
 
+import br.com.fiap.SysFeedback.application.mapper.AvaliacaoMapper;
+import br.com.fiap.SysFeedback.application.mapper.FeedbackMapper;
+import br.com.fiap.SysFeedback.application.mapper.UserMapper;
 import br.com.fiap.SysFeedback.application.repository.RepositoryAvaliacaoPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryFeedbackPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
@@ -14,27 +17,31 @@ public class UseCaseConfig {
     @Bean
     public UserCreateUseCase userCreateUseCase(
             RepositoryUserPort repository,
-            PasswordEncoderPort passwordEncoderPort) {
+            PasswordEncoderPort passwordEncoderPort,
+            UserMapper userMapper) {
 
-        return new UserCreateUseCase(repository, passwordEncoderPort);
+        return new UserCreateUseCase(repository, passwordEncoderPort, userMapper);
     }
 
     @Bean
-    public UserFindByEmailUseCase userFindByEmailUseCase(RepositoryUserPort repository) {
-        return new UserFindByEmailUseCase(repository);
+    public UserFindByEmailUseCase userFindByEmailUseCase(RepositoryUserPort repository,
+                                                         UserMapper userMapper) {
+        return new UserFindByEmailUseCase(repository, userMapper);
     }
 
     @Bean
-    public UserFindAllUseCase userFindAllUseCase(RepositoryUserPort repository) {
-        return new UserFindAllUseCase(repository);
+    public UserFindAllUseCase userFindAllUseCase(RepositoryUserPort repository,
+                                                 UserMapper userMapper) {
+        return new UserFindAllUseCase(repository, userMapper);
     }
 
     @Bean
     public UserUpdateUseCase userUpdateUseCase(
             RepositoryUserPort repository,
-            PasswordEncoderPort passwordEncoderPort) {
+            PasswordEncoderPort passwordEncoderPort,
+            UserMapper userMapper) {
 
-        return new UserUpdateUseCase(repository, passwordEncoderPort);
+        return new UserUpdateUseCase(repository, passwordEncoderPort, userMapper);
     }
 
     @Bean
@@ -45,13 +52,15 @@ public class UseCaseConfig {
     // ----- Avaliação -----
 
     @Bean
-    public AvaliacaoCreateUseCase avaliacaoCreateUseCase(RepositoryAvaliacaoPort repository) {
-        return new AvaliacaoCreateUseCase(repository);
+    public AvaliacaoCreateUseCase avaliacaoCreateUseCase(RepositoryAvaliacaoPort repository,
+                                                         AvaliacaoMapper avaliacaoMapper) {
+        return new AvaliacaoCreateUseCase(repository, avaliacaoMapper);
     }
 
     @Bean
-    public AvaliacaoFindAllUseCase avaliacaoFindAllUseCase(RepositoryAvaliacaoPort repository) {
-        return new AvaliacaoFindAllUseCase(repository);
+    public AvaliacaoFindAllUseCase avaliacaoFindAllUseCase(RepositoryAvaliacaoPort repository,
+                                                           AvaliacaoMapper avaliacaoMapper) {
+        return new AvaliacaoFindAllUseCase(repository, avaliacaoMapper);
     }
 
     // ----- Feedback -----
@@ -59,13 +68,15 @@ public class UseCaseConfig {
     @Bean
     public FeedbackGenerateUseCase feedbackGenerateUseCase(
             RepositoryAvaliacaoPort avaliacaoRepository,
-            RepositoryFeedbackPort feedbackRepository) {
+            RepositoryFeedbackPort feedbackRepository,
+            FeedbackMapper feedbackMapper) {
 
-        return new FeedbackGenerateUseCase(avaliacaoRepository, feedbackRepository);
+        return new FeedbackGenerateUseCase(avaliacaoRepository, feedbackRepository, feedbackMapper);
     }
 
     @Bean
-    public FeedbackFindAllUseCase feedbackFindAllUseCase(RepositoryFeedbackPort repository) {
-        return new FeedbackFindAllUseCase(repository);
+    public FeedbackFindAllUseCase feedbackFindAllUseCase(RepositoryFeedbackPort repository,
+                                                         FeedbackMapper feedbackMapper) {
+        return new FeedbackFindAllUseCase(repository, feedbackMapper);
     }
 }

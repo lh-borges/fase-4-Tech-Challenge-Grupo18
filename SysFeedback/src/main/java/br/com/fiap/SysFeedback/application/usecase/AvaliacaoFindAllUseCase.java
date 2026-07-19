@@ -12,15 +12,18 @@ import java.util.List;
 public class AvaliacaoFindAllUseCase {
 
     private final RepositoryAvaliacaoPort repositoryAvaliacaoPort;
+    private final AvaliacaoMapper avaliacaoMapper;
 
-    public AvaliacaoFindAllUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort) {
+    public AvaliacaoFindAllUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort,
+                                   AvaliacaoMapper avaliacaoMapper) {
         this.repositoryAvaliacaoPort = repositoryAvaliacaoPort;
+        this.avaliacaoMapper = avaliacaoMapper;
     }
 
     public List<AvaliacaoResponseDTO> execute() {
         return repositoryAvaliacaoPort.findAll()
                 .stream()
-                .map(AvaliacaoMapper::toResponse)
+                .map(avaliacaoMapper::toResponse)
                 .toList();
     }
 }
