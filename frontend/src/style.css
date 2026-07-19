@@ -135,8 +135,21 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .stat .l { color: var(--muted); font-size: 13px; }
 .stat.danger .n { color: var(--alta); }
 
-.list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; flex-wrap: wrap; }
 .list-head h2 { margin: 0; font-size: 18px; }
+.filtro { display: flex; align-items: center; gap: 8px; }
+
+.select {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+  font-size: 15px; font-family: inherit; background: #fff; color: var(--ink); cursor: pointer;
+}
+.select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+.filtro .select { width: auto; min-width: 180px; padding: 8px 12px; }
+
+.disciplina-tag {
+  background: #eef2ff; color: #3730a3; border-radius: 8px;
+  padding: 3px 10px; font-size: 12px; font-weight: 600;
+}
 
 .avaliacao { padding: 16px 18px; margin-bottom: 12px; }
 .av-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
