@@ -4,36 +4,19 @@ import br.com.fiap.SysFeedback.domain.entity.Avaliacao;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.AvaliacaoJpaEntity;
 
 /**
- * Conversor entre a entidade de domínio {@link Avaliacao} e a entidade de
- * persistência {@link AvaliacaoJpaEntity}.
+ * Conversor da entidade de persistência {@link AvaliacaoJpaEntity} para a entidade
+ * de domínio {@link Avaliacao}.
+ *
+ * <p>A conversão para JPA (incluindo as relações com disciplina e aluno) é feita no
+ * {@code AvaliacaoRepositoryAdapter}, que tem acesso às referências gerenciadas.</p>
  *
  * @author luisbraserv
  */
 public class AvaliacaoPersistenceMapper {
 
     /**
-     * Converte uma avaliação de domínio na entidade JPA correspondente.
-     *
-     * @param  avaliacao  avaliação de domínio a converter
-     * @return entidade JPA equivalente, ou {@code null} se a entrada for nula
-     *
-     * @author luisbraserv
-     */
-    public static AvaliacaoJpaEntity toJpa(Avaliacao avaliacao) {
-        if (avaliacao == null) {
-            return null;
-        }
-        return new AvaliacaoJpaEntity(
-                avaliacao.getId(),
-                avaliacao.getDescricao(),
-                avaliacao.getNota(),
-                avaliacao.getUrgencia(),
-                avaliacao.getDataEnvio()
-        );
-    }
-
-    /**
-     * Converte uma entidade JPA na avaliação de domínio correspondente.
+     * Converte uma entidade JPA na avaliação de domínio, incluindo os identificadores
+     * de disciplina e aluno.
      *
      * @param  entity  entidade JPA a converter
      * @return avaliação de domínio equivalente, ou {@code null} se a entrada for nula
@@ -49,7 +32,9 @@ public class AvaliacaoPersistenceMapper {
                 entity.getDescricao(),
                 entity.getNota(),
                 entity.getUrgencia(),
-                entity.getDataEnvio()
+                entity.getDataEnvio(),
+                entity.getDisciplina() != null ? entity.getDisciplina().getId() : null,
+                entity.getAluno() != null ? entity.getAluno().getId() : null
         );
     }
 }

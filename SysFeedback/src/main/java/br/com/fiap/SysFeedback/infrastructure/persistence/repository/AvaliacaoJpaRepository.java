@@ -26,4 +26,14 @@ public interface AvaliacaoJpaRepository extends JpaRepository<AvaliacaoJpaEntity
      * @author luisbraserv
      */
     List<AvaliacaoJpaEntity> findByDataEnvioBetween(LocalDateTime inicio, LocalDateTime fim);
+
+    /**
+     * Busca as avaliações pertencentes às disciplinas informadas.
+     *
+     * @param  disciplinaIds  identificadores das disciplinas
+     * @return avaliações das disciplinas informadas
+     *
+     * @author Danilo Fernando
+     */
+    List<AvaliacaoJpaEntity> findByDisciplina_IdIn(List<UUID> disciplinaIds);
 }
