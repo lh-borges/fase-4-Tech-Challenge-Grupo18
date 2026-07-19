@@ -1,0 +1,51 @@
+# Sobe o backend SysFeedback + PostgreSQL para testar localmente.
+#
+#   docker compose up --build        # sobe tudo (app em http://localhost:8080)
+#   docker compose down              # para
+#   docker compose down -v           # para e apaga o banco (reseta o seed)
+#
+# O banco é populado automaticamente na primeira subida (3 usuários + 18 avaliações).
+# A publicação no Pub/Sub é best-effort: sem credencial GCP ela apenas loga e segue,
+# então o fluxo local funciona sem nuvem.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: grupo18
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "123456"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d grupo18"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  app:
+    build:
+      context: ./SysFeedback
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Sobrescreve o datasource local (application.properties) para apontar ao container do banco.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/grupo18
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "123456"
+      # Chave do endpoint interno (/internal/**), a mesma que a função de relatório usaria.
+      INTERNAL_API_KEY: chave-local-123
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # O navegador chama o backend exposto no host, por isso localhost:8080.
+        VITE_API_BASE: http://localhost:8080
+    depends_on:
+      - app
+    ports:
+      - "8081:80"
