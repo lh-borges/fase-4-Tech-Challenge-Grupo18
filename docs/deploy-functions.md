@@ -31,10 +31,25 @@ printf '%s' "UMA_CHAVE_FORTE_ALEATORIA"     | gcloud secrets create internal-api
 
 ## IAM — princípio do menor privilégio
 
-**SA de deploy (CI)** — apenas o necessário para publicar as funções:
+**SA de deploy (CI)** — como o pipeline também habilita APIs e concede IAM
+(secretAccessor à SA de runtime, publisher ao backend), precisa de:
 `roles/cloudfunctions.developer`, `roles/run.admin` (gen2 roda sobre Cloud Run),
-`roles/iam.serviceAccountUser`, `roles/pubsub.editor` (criar tópicos),
-`roles/cloudscheduler.admin`, `roles/artifactregistry.writer`.
+`roles/iam.serviceAccountUser`, `roles/pubsub.admin` (criar tópicos e conceder binding),
+`roles/cloudscheduler.admin`, `roles/artifactregistry.writer`,
+`roles/secretmanager.admin` (conceder secretAccessor) e
+`roles/serviceusage.serviceUsageAdmin` (habilitar APIs).
+
+> Numa entrega acadêmica, é comum a SA de deploy ser **Editor** do projeto, o que
+> já cobre tudo acima. Para menor privilégio, conceda os papéis listados.
+
+### O que o pipeline automatiza (você não precisa fazer à mão)
+
+O job `prepare` do `deploy-functions.yml` já: habilita as APIs, e concede
+`secretmanager.secretAccessor` à SA de runtime das funções nos segredos
+`smtp-user`, `smtp-password`, `admin-email`, `internal-api-key`. O `deploy.yml`
+(Cloud Run) já concede ao backend o acesso a `internal-api-key` e o
+`pubsub.publisher` no tópico `feedback-urgente`. Ou seja, **restam manuais apenas
+os segredos** (passo 2, valores reais) e os papéis da SA de deploy acima.
 
 **SA de runtime das funções** — só lê os segredos que usa:
 ```bash

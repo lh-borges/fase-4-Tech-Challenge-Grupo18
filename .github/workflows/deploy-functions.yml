@@ -17,8 +17,58 @@ env:
   APP_URL: https://sysfeedback-service-esdfvnerla-rj.a.run.app
 
 jobs:
+  # --------------------------------------------------------------------------
+  # Prepara o projeto uma unica vez: habilita as APIs e concede a permissao de
+  # leitura dos segredos a service account de runtime das funcoes. Sem isso, o
+  # deploy com --set-secrets falha ("permission denied on secret").
+  # --------------------------------------------------------------------------
+  prepare:
+    name: Preparar projeto (APIs e IAM)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Habilitar APIs necessárias
+        run: |
+          gcloud services enable \
+            run.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com pubsub.googleapis.com cloudscheduler.googleapis.com \
+            secretmanager.googleapis.com eventarc.googleapis.com \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Conceder secretAccessor à SA de runtime das funções
+        run: |
+          if [ -n "${{ secrets.GCP_FUNCTIONS_SA }}" ]; then
+            RUNTIME_SA="${{ secrets.GCP_FUNCTIONS_SA }}"
+          else
+            PN=$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)')
+            RUNTIME_SA="${PN}-compute@developer.gserviceaccount.com"
+          fi
+          echo "Service account de runtime: $RUNTIME_SA"
+          for SECRET in smtp-user smtp-password admin-email internal-api-key; do
+            gcloud secrets add-iam-policy-binding "$SECRET" \
+              --member="serviceAccount:${RUNTIME_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --project=${{ env.PROJECT_ID }} \
+              || echo "aviso: não foi possível conceder secretAccessor em $SECRET"
+          done
+
+  # --------------------------------------------------------------------------
+  # Build e deploy de cada funcao (uma por vez na matriz).
+  # --------------------------------------------------------------------------
   deploy:
     name: Build e deploy (${{ matrix.name }})
+    needs: prepare
     runs-on: ubuntu-latest
 
     permissions:

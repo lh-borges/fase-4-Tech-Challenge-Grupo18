@@ -61,20 +61,16 @@ gcloud secrets add-iam-policy-binding internal-api-key \
   --role="roles/secretmanager.secretAccessor" --project=$PROJECT
 ```
 
-**Service account de runtime das funções** (pode ser a padrão de Compute ou uma
-dedicada — recomendada). Ela só precisa **ler** os segredos que usa:
-```bash
-FUNCTIONS_SA="<SA-de-runtime-das-funcoes>@$PROJECT.iam.gserviceaccount.com"
-for s in smtp-user smtp-password admin-email internal-api-key; do
-  gcloud secrets add-iam-policy-binding $s \
-    --member="serviceAccount:$FUNCTIONS_SA" \
-    --role="roles/secretmanager.secretAccessor" --project=$PROJECT
-done
-```
+**Service account de runtime das funções** — só precisa **ler** os segredos que usa
+(smtp-user, smtp-password, admin-email, internal-api-key). **Isto o CI já concede
+sozinho** (job `prepare`), então não precisa fazer à mão.
 
 **Service account de deploy do CI** precisa dos papéis:
 `roles/cloudfunctions.developer`, `roles/run.admin`, `roles/iam.serviceAccountUser`,
-`roles/pubsub.editor`, `roles/cloudscheduler.admin`, `roles/artifactregistry.writer`.
+`roles/pubsub.admin`, `roles/cloudscheduler.admin`, `roles/artifactregistry.writer`,
+`roles/secretmanager.admin` e `roles/serviceusage.serviceUsageAdmin`
+(porque o CI habilita APIs e concede os bindings de IAM). Numa entrega acadêmica,
+a SA de deploy costuma ser **Editor** do projeto, o que já cobre tudo isso.
 
 ## 5. Secrets do GitHub Actions (repositório)
 
@@ -82,21 +78,27 @@ Já existem (usados pelo deploy do backend): `GCP_WORKLOAD_IDENTITY_PROVIDER`,
 `GCP_SA_EMAIL`. **Opcional novo:** `GCP_FUNCTIONS_SA` (e-mail da SA de runtime das
 funções; se não definir, usa a padrão).
 
-## 6. O que o CI cria sozinho (não precisa fazer à mão)
+## 6. O que o CI faz sozinho (não precisa fazer à mão)
 
-- Deploy das duas funções (`notifica-urgente`, `relatorio-semanal`) — gen2, Java 21.
-- Cloud Scheduler `relatorio-semanal-trigger` (segunda 08:00, America/Sao_Paulo)
-  publicando em `relatorio-semanal`.
-- (Re)deploy do backend já injeta `INTERNAL_API_KEY` e `GCP_PROJECT_ID`.
+- **Habilita as APIs** necessárias (job `prepare`).
+- **Concede o IAM**: `secretAccessor` à SA de runtime das funções; `secretAccessor`
+  do `internal-api-key` e `pubsub.publisher` ao backend.
+- Cria os **tópicos** (`feedback-urgente`, `relatorio-semanal`) e o **Cloud Scheduler**
+  `relatorio-semanal-trigger` (segunda 08:00, America/Sao_Paulo).
+- Deploy das duas funções (gen2, Java 21) e (re)deploy do backend com `INTERNAL_API_KEY`
+  e `GCP_PROJECT_ID`.
 
-## 7. Checklist rápido para o Gilmar
+## 7. Checklist rápido para o Gilmar (só isto é manual)
 
-- [ ] Habilitar as APIs (passo 1)
-- [ ] Criar segredos `smtp-user`, `smtp-password`, `internal-api-key` (passo 2)
-- [ ] Conceder IAM: publisher no tópico + secretAccessor (passo 4)
-- [ ] (Opcional) criar SA dedicada das funções e o secret `GCP_FUNCTIONS_SA`
-- [ ] Confirmar que os secrets do GitHub de deploy existem (passo 5)
-- [ ] Dar merge do PR na `main` → o CI faz o resto
+- [ ] Criar os segredos com **valores reais**: `smtp-user`, `smtp-password`,
+      `admin-email`, `internal-api-key` (passo 2). Se ainda não existirem, crie também
+      `db-url`, `db-user`, `db-password`.
+- [ ] Garantir que a **SA de deploy** (`GCP_SA_EMAIL`) tem os papéis do passo 4
+      (ou é Editor do projeto).
+- [ ] Confirmar os secrets do GitHub: `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SA_EMAIL`
+      (passo 5). `GCP_FUNCTIONS_SA` é opcional.
+- [ ] Garantir que a instância **Cloud SQL** `db-tech-challenge` existe.
+- [ ] Dar merge do PR na `main` → **o CI faz o resto** (APIs, IAM, tópicos, deploy).
 
 ## 8. Valor da conta SMTP
 

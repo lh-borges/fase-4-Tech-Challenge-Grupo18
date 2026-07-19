@@ -69,6 +69,21 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ github.sha }}
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:latest
 
+      - name: Conceder permissões à SA do Cloud Run
+        run: |
+          SA="sa-recebe-feedback@${{ env.PROJECT_ID }}.iam.gserviceaccount.com"
+          # Leitura do segredo do endpoint interno (/internal/**)
+          gcloud secrets add-iam-policy-binding internal-api-key \
+            --member="serviceAccount:${SA}" \
+            --role="roles/secretmanager.secretAccessor" \
+            --project=${{ env.PROJECT_ID }} || echo "aviso: secretAccessor em internal-api-key"
+          # Publicacao de avaliacoes urgentes no Pub/Sub
+          gcloud pubsub topics create feedback-urgente --project=${{ env.PROJECT_ID }} 2>/dev/null || true
+          gcloud pubsub topics add-iam-policy-binding feedback-urgente \
+            --member="serviceAccount:${SA}" \
+            --role="roles/pubsub.publisher" \
+            --project=${{ env.PROJECT_ID }} || echo "aviso: pubsub.publisher em feedback-urgente"
+
       - name: Deploy no Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE }} \
