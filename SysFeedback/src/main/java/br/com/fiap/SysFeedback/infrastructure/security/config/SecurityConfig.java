@@ -1,6 +1,7 @@
 package br.com.fiap.SysFeedback.infrastructure.security.config;
 
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
+import br.com.fiap.SysFeedback.infrastructure.security.filter.InternalApiKeyFilter;
 import br.com.fiap.SysFeedback.infrastructure.security.filter.JwtAuthFilter;
 import br.com.fiap.SysFeedback.infrastructure.security.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -25,10 +26,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final RepositoryUserPort repositoryUserPort;  // ← ADICIONE
+    private final InternalApiKeyFilter internalApiKeyFilter;
+    private final RepositoryUserPort repositoryUserPort;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RepositoryUserPort repositoryUserPort) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          InternalApiKeyFilter internalApiKeyFilter,
+                          RepositoryUserPort repositoryUserPort) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.internalApiKeyFilter = internalApiKeyFilter;
         this.repositoryUserPort = repositoryUserPort;
     }
 
@@ -71,6 +76,10 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
+                        // Rotas internas (maquina-a-maquina): a cadeia libera aqui,
+                        // mas o InternalApiKeyFilter exige a API key (X-Internal-Api-Key).
+                        .requestMatchers("/internal/**").permitAll()
+
                         // 2. Regras específicas do contexto /users (Centralizadas aqui!)
                         .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
@@ -95,6 +104,10 @@ public class SecurityConfig {
                         // 4. Bloqueio residual global
                         .anyRequest().authenticated()
                 )
+                // Ambos os filtros custom rodam antes da autenticacao padrao.
+                // A ancora precisa ser um filtro conhecido do Spring Security
+                // (UsernamePasswordAuthenticationFilter), nao um filtro custom.
+                .addFilterBefore(internalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
