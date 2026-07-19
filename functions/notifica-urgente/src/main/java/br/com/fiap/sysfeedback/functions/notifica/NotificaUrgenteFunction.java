@@ -36,6 +36,8 @@ import java.util.Base64;
  *
  * <p>O {@code message.data} é o {@link AvaliacaoUrgente} publicado pela aplicação,
  * codificado em base64.</p>
+ *
+ * @author Danilo Fernando
  */
 @ApplicationScoped
 public class NotificaUrgenteFunction implements CloudEventsFunction {
@@ -46,6 +48,15 @@ public class NotificaUrgenteFunction implements CloudEventsFunction {
     private final Mailer mailer;
     private final String adminEmail;
 
+    /**
+     * Injeta as dependências da função e o e-mail do administrador destinatário.
+     *
+     * @param  objectMapper  serializador Jackson usado para ler o payload Pub/Sub
+     * @param  mailer         componente do Quarkus responsável pelo envio de e-mail
+     * @param  adminEmail     endereço do administrador que recebe o aviso de urgência
+     *
+     * @author Danilo Fernando
+     */
     @Inject
     public NotificaUrgenteFunction(ObjectMapper objectMapper,
                                    Mailer mailer,
@@ -55,6 +66,16 @@ public class NotificaUrgenteFunction implements CloudEventsFunction {
         this.adminEmail = adminEmail;
     }
 
+    /**
+     * Recebe o CloudEvent do Pub/Sub e delega o envio da notificação; ignora
+     * eventos sem payload.
+     *
+     * @param  event  evento entregue pelo gatilho Pub/Sub
+     *
+     * @throws Exception  se a leitura do payload ou o envio do e-mail falhar
+     *
+     * @author Danilo Fernando
+     */
     @Override
     public void accept(CloudEvent event) throws Exception {
         if (event.getData() == null) {
@@ -65,10 +86,17 @@ public class NotificaUrgenteFunction implements CloudEventsFunction {
     }
 
     /**
-     * Núcleo da função: desembrulha o envelope Pub/Sub, monta e envia o e-mail.
-     * Recebe os bytes do {@code data} do CloudEvent (o JSON
+     * Desembrulha o envelope Pub/Sub, monta o e-mail e o envia ao administrador.
+     *
+     * <p>Recebe os bytes do {@code data} do CloudEvent (o JSON
      * {@code MessagePublishedData}), o que permite testar sem construir um
-     * {@link CloudEvent} completo.
+     * {@link CloudEvent} completo.</p>
+     *
+     * @param  cloudEventData  bytes do {@code data} do CloudEvent (envelope Pub/Sub)
+     *
+     * @throws Exception  se a leitura do payload ou o envio do e-mail falhar
+     *
+     * @author Danilo Fernando
      */
     void notificar(byte[] cloudEventData) throws Exception {
         AvaliacaoUrgente avaliacao = extrairAvaliacao(cloudEventData);
@@ -85,8 +113,16 @@ public class NotificaUrgenteFunction implements CloudEventsFunction {
     }
 
     /**
-     * Desembrulha o CloudEvent do Pub/Sub: lê {@code message.data}, decodifica o
+     * Extrai a avaliação do CloudEvent: lê {@code message.data}, decodifica o
      * base64 e converte o JSON interno em {@link AvaliacaoUrgente}.
+     *
+     * @param  cloudEventData  bytes do {@code data} do CloudEvent (envelope Pub/Sub)
+     * @return a avaliação desserializada, ou {@code null} se o envelope não tiver
+     *         {@code message.data}
+     *
+     * @throws Exception  se a decodificação ou a desserialização do JSON falhar
+     *
+     * @author Danilo Fernando
      */
     AvaliacaoUrgente extrairAvaliacao(byte[] cloudEventData) throws Exception {
         JsonNode raiz = objectMapper.readTree(cloudEventData);
@@ -103,6 +139,14 @@ public class NotificaUrgenteFunction implements CloudEventsFunction {
         return objectMapper.readValue(payload, AvaliacaoUrgente.class);
     }
 
+    /**
+     * Monta o corpo em texto puro do e-mail de aviso a partir da avaliação.
+     *
+     * @param  avaliacao  avaliação urgente a ser descrita no e-mail
+     * @return o texto do corpo do e-mail já formatado
+     *
+     * @author Danilo Fernando
+     */
     private String montarCorpo(AvaliacaoUrgente avaliacao) {
         return """
                 Uma nova avaliacao critica foi registrada na plataforma SysFeedback.

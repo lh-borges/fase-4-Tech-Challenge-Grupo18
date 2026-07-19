@@ -26,12 +26,24 @@ import java.util.List;
  * <p>Cria um usuário de cada role e um conjunto de avaliações distribuídas ao
  * longo dos últimos dias, com notas variadas, para que o relatório de feedback
  * (avaliações por dia e por urgência) tenha dados significativos.</p>
+ *
+ * @author luisbraserv
  */
 @Configuration
 public class DataSeeder {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
+    /**
+     * Registra o runner de carga inicial executado na subida da aplicação.
+     *
+     * @param  userRepository  repositório de usuários usado para verificar e popular a base
+     * @param  avaliacaoRepository  repositório de avaliações usado para verificar e popular a base
+     * @param  passwordEncoder  codificador aplicado às senhas dos usuários semeados
+     * @return runner que popula a base apenas quando ela está vazia
+     *
+     * @author luisbraserv
+     */
     @Bean
     public CommandLineRunner seedDatabase(UserJpaRepository userRepository,
                                           AvaliacaoJpaRepository avaliacaoRepository,
@@ -51,6 +63,15 @@ public class DataSeeder {
         };
     }
 
+    /**
+     * Persiste os usuários e as avaliações de exemplo na base.
+     *
+     * @param  userRepository  repositório onde os usuários de exemplo são salvos
+     * @param  avaliacaoRepository  repositório onde as avaliações de exemplo são salvas
+     * @param  passwordEncoder  codificador aplicado às senhas dos usuários criados
+     *
+     * @author luisbraserv
+     */
     private void popular(UserJpaRepository userRepository,
                          AvaliacaoJpaRepository avaliacaoRepository,
                          PasswordEncoder passwordEncoder) {
@@ -81,6 +102,18 @@ public class DataSeeder {
         avaliacaoRepository.saveAll(avaliacoes);
     }
 
+    /**
+     * Monta uma entidade de usuário com senha codificada e data de criação atual.
+     *
+     * @param  nome  nome do usuário
+     * @param  email  e-mail de login do usuário
+     * @param  senha  senha em texto puro a ser codificada
+     * @param  role  papel/perfil de acesso do usuário
+     * @param  encoder  codificador aplicado à senha
+     * @return entidade de usuário pronta para persistência
+     *
+     * @author luisbraserv
+     */
     private UserJpaEntity novoUsuario(String nome, String email, String senha,
                                       Role role, PasswordEncoder encoder) {
         UserJpaEntity user = new UserJpaEntity();
@@ -92,6 +125,17 @@ public class DataSeeder {
         return user;
     }
 
+    /**
+     * Monta uma avaliação de exemplo com urgência derivada da nota e data no passado.
+     *
+     * @param  descricao  texto descritivo da avaliação
+     * @param  nota  nota atribuída, usada para calcular a urgência
+     * @param  diasAtras  quantos dias no passado a avaliação foi enviada
+     * @param  horaDoDia  hora do dia (0-23) do envio
+     * @return entidade de avaliação pronta para persistência
+     *
+     * @author luisbraserv
+     */
     private AvaliacaoJpaEntity novaAvaliacao(String descricao, int nota,
                                              int diasAtras, int horaDoDia) {
         AvaliacaoJpaEntity avaliacao = new AvaliacaoJpaEntity();

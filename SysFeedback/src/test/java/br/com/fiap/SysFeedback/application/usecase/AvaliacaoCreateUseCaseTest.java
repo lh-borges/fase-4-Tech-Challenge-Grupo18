@@ -17,6 +17,8 @@ import static org.mockito.Mockito.when;
  * Testa a regra de negócio de notificação: apenas avaliações com urgência ALTA
  * (nota 0–3) disparam a notificação de urgência. É um teste de unidade puro — o
  * use case é um POJO, sem Spring nem banco.
+ *
+ * @author Danilo Fernando
  */
 class AvaliacaoCreateUseCaseTest {
 
@@ -24,6 +26,11 @@ class AvaliacaoCreateUseCaseTest {
     private final NotificadorUrgentePort notificador = mock(NotificadorUrgentePort.class);
     private final AvaliacaoCreateUseCase useCase = new AvaliacaoCreateUseCase(repository, notificador);
 
+    /**
+     * Garante que uma nota crítica (ALTA) dispara a notificação de urgência.
+     *
+     * @author Danilo Fernando
+     */
     @Test
     void notaCriticaDisparaNotificacaoDeUrgencia() {
         when(repository.save(any())).thenAnswer(inv -> inv.<Avaliacao>getArgument(0));
@@ -33,6 +40,11 @@ class AvaliacaoCreateUseCaseTest {
         verify(notificador, times(1)).notificarUrgente(any(Avaliacao.class));
     }
 
+    /**
+     * Garante que uma nota não crítica (BAIXA) não dispara notificação.
+     *
+     * @author Danilo Fernando
+     */
     @Test
     void notaNaoCriticaNaoDisparaNotificacao() {
         when(repository.save(any())).thenAnswer(inv -> inv.<Avaliacao>getArgument(0));

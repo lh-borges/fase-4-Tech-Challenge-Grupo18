@@ -13,6 +13,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Entidade JPA que mapeia a tabela {@code feedbacks}, consolidando o período,
+ * a média das notas, o total de avaliações e as contagens por dia e por
+ * urgência (mapeadas em tabelas de coleção associadas).
+ *
+ * @author luisbraserv
+ */
 @Entity
 @Table(name = "feedbacks")
 @Getter

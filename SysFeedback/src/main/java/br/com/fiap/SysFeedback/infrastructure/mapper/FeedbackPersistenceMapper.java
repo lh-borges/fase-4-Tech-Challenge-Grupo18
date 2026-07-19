@@ -5,8 +5,23 @@ import br.com.fiap.SysFeedback.infrastructure.persistence.entity.FeedbackJpaEnti
 
 import java.util.LinkedHashMap;
 
+/**
+ * Conversor entre a entidade de domínio {@link Feedback} e a entidade de
+ * persistência {@link FeedbackJpaEntity}, copiando os mapas de contagem para
+ * isolar as instâncias.
+ *
+ * @author luisbraserv
+ */
 public class FeedbackPersistenceMapper {
 
+    /**
+     * Converte um feedback de domínio na entidade JPA correspondente.
+     *
+     * @param  feedback  feedback de domínio a converter
+     * @return entidade JPA equivalente, ou {@code null} se a entrada for nula
+     *
+     * @author luisbraserv
+     */
     public static FeedbackJpaEntity toJpa(Feedback feedback) {
         if (feedback == null) {
             return null;
@@ -23,6 +38,14 @@ public class FeedbackPersistenceMapper {
         return entity;
     }
 
+    /**
+     * Converte uma entidade JPA no feedback de domínio correspondente.
+     *
+     * @param  entity  entidade JPA a converter
+     * @return feedback de domínio equivalente, ou {@code null} se a entrada for nula
+     *
+     * @author luisbraserv
+     */
     public static Feedback toDomain(FeedbackJpaEntity entity) {
         if (entity == null) {
             return null;

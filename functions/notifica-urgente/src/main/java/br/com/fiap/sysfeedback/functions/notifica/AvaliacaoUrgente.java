@@ -15,6 +15,12 @@ package br.com.fiap.sysfeedback.functions.notifica;
  *   "dataEnvio": "2026-07-19T10:00:00"
  * }
  * }</pre>
+ *
+ * @param  descricao  texto da avaliação registrada pelo usuário
+ * @param  urgencia   nível de urgência da avaliação (ex.: {@code ALTA})
+ * @param  dataEnvio  data e hora do envio, em formato ISO-8601
+ *
+ * @author Danilo Fernando
  */
 public record AvaliacaoUrgente(String descricao, String urgencia, String dataEnvio) {
 }

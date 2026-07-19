@@ -20,6 +20,8 @@ import java.util.List;
  * </ul>
  *
  * <p>As regras de autorização por role ficam centralizadas no SecurityConfig.</p>
+ *
+ * @author luisbraserv
  */
 @RestController
 @RequestMapping("/avaliacoes")
@@ -29,12 +31,27 @@ public class AvaliacaoController {
     private final AvaliacaoCreateUseCase avaliacaoCreateUseCase;
     private final AvaliacaoFindAllUseCase avaliacaoFindAllUseCase;
 
+    /**
+     * Cria uma avaliação a partir do payload enviado.
+     *
+     * @param  request  dados da avaliação a criar
+     * @return resposta 201 com a avaliação criada
+     *
+     * @author luisbraserv
+     */
     @PostMapping
     public ResponseEntity<AvaliacaoResponseDTO> create(@Valid @RequestBody AvaliacaoRequestDTO request) {
         AvaliacaoResponseDTO response = avaliacaoCreateUseCase.execute(request);
         return ResponseEntity.status(201).body(response);
     }
 
+    /**
+     * Lista todas as avaliações cadastradas.
+     *
+     * @return resposta 200 com a lista de avaliações
+     *
+     * @author luisbraserv
+     */
     @GetMapping
     public ResponseEntity<List<AvaliacaoResponseDTO>> findAll() {
         List<AvaliacaoResponseDTO> response = avaliacaoFindAllUseCase.execute();

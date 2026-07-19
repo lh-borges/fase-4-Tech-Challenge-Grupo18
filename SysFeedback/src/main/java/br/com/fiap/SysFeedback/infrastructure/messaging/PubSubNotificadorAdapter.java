@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  * <p>Um {@link Publisher} é criado por chamada e encerrado ao final. Dado o baixo
  * volume de avaliações críticas, o custo é irrelevante e evita canais gRPC
  * ociosos/obsoletos entre requisições.</p>
+ *
+ * @author Danilo Fernando
  */
 @Component
 public class PubSubNotificadorAdapter implements NotificadorUrgentePort {
@@ -35,6 +37,15 @@ public class PubSubNotificadorAdapter implements NotificadorUrgentePort {
     private final String projectId;
     private final String topicId;
 
+    /**
+     * Cria o adapter com o serializador JSON e as configurações do Pub/Sub.
+     *
+     * @param  objectMapper  serializador JSON do payload publicado
+     * @param  projectId  identificador do projeto GCP (vazio desativa a notificação)
+     * @param  topicId  nome do tópico Pub/Sub de avaliações urgentes
+     *
+     * @author Danilo Fernando
+     */
     public PubSubNotificadorAdapter(
             ObjectMapper objectMapper,
             @Value("${gcp.project-id:}") String projectId,
@@ -44,6 +55,16 @@ public class PubSubNotificadorAdapter implements NotificadorUrgentePort {
         this.topicId = topicId;
     }
 
+    /**
+     * Publica a avaliação urgente no tópico Pub/Sub configurado.
+     *
+     * <p>Best-effort: sem {@code projectId} a notificação é ignorada e qualquer
+     * falha de publicação é logada sem propagar exceção.</p>
+     *
+     * @param  avaliacao  avaliação crítica a publicar
+     *
+     * @author Danilo Fernando
+     */
     @Override
     public void notificarUrgente(Avaliacao avaliacao) {
         if (projectId == null || projectId.isBlank()) {
@@ -75,6 +96,13 @@ public class PubSubNotificadorAdapter implements NotificadorUrgentePort {
         }
     }
 
+    /**
+     * Encerra o publisher liberando o canal gRPC, aguardando a finalização.
+     *
+     * @param  publisher  publisher a encerrar (ignora {@code null})
+     *
+     * @author Danilo Fernando
+     */
     private void encerrar(Publisher publisher) {
         if (publisher == null) {
             return;

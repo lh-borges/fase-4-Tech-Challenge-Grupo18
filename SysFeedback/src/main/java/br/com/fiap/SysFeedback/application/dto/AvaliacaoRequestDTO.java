@@ -9,6 +9,11 @@ import jakarta.validation.constraints.Size;
 /**
  * Payload de entrada de uma avaliação (POST /avaliacoes).
  * Segue a referência do desafio: descrição e nota (0 a 10).
+ *
+ * @param  descricao  texto livre da avaliação (obrigatório, até 1000 caracteres)
+ * @param  nota  nota atribuída (obrigatória, entre 0 e 10)
+ *
+ * @author luisbraserv
  */
 public record AvaliacaoRequestDTO(
 

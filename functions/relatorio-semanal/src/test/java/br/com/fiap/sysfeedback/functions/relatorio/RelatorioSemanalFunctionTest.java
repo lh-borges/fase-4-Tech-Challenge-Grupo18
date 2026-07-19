@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Testa a formatação e o envio do relatório semanal, usando o {@link MockMailbox}.
  * A busca HTTP no backend é testada em integração (não aqui).
+ *
+ * @author Danilo Fernando
  */
 @QuarkusTest
 class RelatorioSemanalFunctionTest {
@@ -25,11 +27,23 @@ class RelatorioSemanalFunctionTest {
     @Inject
     MockMailbox mailbox;
 
+    /**
+     * Limpa a caixa de e-mail simulada antes de cada teste.
+     *
+     * @author Danilo Fernando
+     */
     @BeforeEach
     void limparCaixa() {
         mailbox.clear();
     }
 
+    /**
+     * Cria um relatório semanal de exemplo para uso nos testes.
+     *
+     * @return um relatório preenchido com médias, contagens e avaliações
+     *
+     * @author Danilo Fernando
+     */
     private RelatorioSemanal relatorioExemplo() {
         return new RelatorioSemanal(
                 "2026-07-12T00:00:00",
@@ -43,6 +57,11 @@ class RelatorioSemanalFunctionTest {
                         new RelatorioSemanal.Item("Boa aula", "BAIXA", "2026-07-17T14:00:00")));
     }
 
+    /**
+     * Verifica que o corpo do e-mail contém média, contagens e detalhamento.
+     *
+     * @author Danilo Fernando
+     */
     @Test
     void corpoContemMediaContagensEDetalhe() {
         String corpo = function.montarCorpo(relatorioExemplo());
@@ -53,6 +72,11 @@ class RelatorioSemanalFunctionTest {
         assertTrue(corpo.contains("Total"), "deve conter o total");
     }
 
+    /**
+     * Verifica que um único e-mail de relatório é enviado ao admin.
+     *
+     * @author Danilo Fernando
+     */
     @Test
     void enviaEmailDoRelatorioParaAdmin() {
         function.enviar(relatorioExemplo());

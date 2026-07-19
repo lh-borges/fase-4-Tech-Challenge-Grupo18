@@ -9,9 +9,28 @@ import br.com.fiap.SysFeedback.application.usecase.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Fábrica (wiring manual) dos casos de uso da aplicação.
+ *
+ * <p>Os use cases são POJOs independentes de framework; esta configuração os
+ * expõe como beans, injetando as portas (repositórios, segurança, mensageria)
+ * resolvidas pelos adapters de infraestrutura. Mantém a camada de aplicação livre
+ * de anotações do Spring.</p>
+ *
+ * @author Thiago de Jesus
+ */
 @Configuration
 public class UseCaseConfig {
 
+    /**
+     * Cria o caso de uso de cadastro de usuário.
+     *
+     * @param  repository  porta de persistência de usuários
+     * @param  passwordEncoderPort  porta de codificação de senha
+     * @return o caso de uso de criação de usuário
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public UserCreateUseCase userCreateUseCase(
             RepositoryUserPort repository,
@@ -20,16 +39,41 @@ public class UseCaseConfig {
         return new UserCreateUseCase(repository, passwordEncoderPort);
     }
 
+    /**
+     * Cria o caso de uso de busca de usuário por e-mail.
+     *
+     * @param  repository  porta de persistência de usuários
+     * @return o caso de uso de busca por e-mail
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public UserFindByEmailUseCase userFindByEmailUseCase(RepositoryUserPort repository) {
         return new UserFindByEmailUseCase(repository);
     }
 
+    /**
+     * Cria o caso de uso de listagem de todos os usuários.
+     *
+     * @param  repository  porta de persistência de usuários
+     * @return o caso de uso de listagem de usuários
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public UserFindAllUseCase userFindAllUseCase(RepositoryUserPort repository) {
         return new UserFindAllUseCase(repository);
     }
 
+    /**
+     * Cria o caso de uso de atualização de usuário.
+     *
+     * @param  repository  porta de persistência de usuários
+     * @param  passwordEncoderPort  porta de codificação de senha
+     * @return o caso de uso de atualização de usuário
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public UserUpdateUseCase userUpdateUseCase(
             RepositoryUserPort repository,
@@ -38,6 +82,14 @@ public class UseCaseConfig {
         return new UserUpdateUseCase(repository, passwordEncoderPort);
     }
 
+    /**
+     * Cria o caso de uso de remoção de usuário.
+     *
+     * @param  repository  porta de persistência de usuários
+     * @return o caso de uso de remoção de usuário
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public UserDeleteUseCase userDeleteUseCase(RepositoryUserPort repository) {
         return new UserDeleteUseCase(repository);
@@ -45,6 +97,15 @@ public class UseCaseConfig {
 
     // ----- Avaliação -----
 
+    /**
+     * Cria o caso de uso de registro de avaliação, com notificação de urgência.
+     *
+     * @param  repository  porta de persistência de avaliações
+     * @param  notificadorUrgentePort  porta de notificação de avaliações críticas
+     * @return o caso de uso de criação de avaliação
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public AvaliacaoCreateUseCase avaliacaoCreateUseCase(
             RepositoryAvaliacaoPort repository,
@@ -53,6 +114,14 @@ public class UseCaseConfig {
         return new AvaliacaoCreateUseCase(repository, notificadorUrgentePort);
     }
 
+    /**
+     * Cria o caso de uso de listagem de avaliações.
+     *
+     * @param  repository  porta de persistência de avaliações
+     * @return o caso de uso de listagem de avaliações
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public AvaliacaoFindAllUseCase avaliacaoFindAllUseCase(RepositoryAvaliacaoPort repository) {
         return new AvaliacaoFindAllUseCase(repository);
@@ -60,6 +129,15 @@ public class UseCaseConfig {
 
     // ----- Feedback -----
 
+    /**
+     * Cria o caso de uso de geração de feedback consolidado por período.
+     *
+     * @param  avaliacaoRepository  porta de persistência de avaliações
+     * @param  feedbackRepository  porta de persistência de feedbacks
+     * @return o caso de uso de geração de feedback
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public FeedbackGenerateUseCase feedbackGenerateUseCase(
             RepositoryAvaliacaoPort avaliacaoRepository,
@@ -68,11 +146,29 @@ public class UseCaseConfig {
         return new FeedbackGenerateUseCase(avaliacaoRepository, feedbackRepository);
     }
 
+    /**
+     * Cria o caso de uso de listagem de feedbacks gerados.
+     *
+     * @param  repository  porta de persistência de feedbacks
+     * @return o caso de uso de listagem de feedbacks
+     *
+     * @author Thiago de Jesus
+     */
     @Bean
     public FeedbackFindAllUseCase feedbackFindAllUseCase(RepositoryFeedbackPort repository) {
         return new FeedbackFindAllUseCase(repository);
     }
 
+    /**
+     * Cria o caso de uso de geração do relatório semanal (consumido pelo endpoint
+     * interno e, por ele, pela Cloud Function {@code relatorio-semanal}).
+     *
+     * @param  avaliacaoRepository  porta de persistência de avaliações
+     * @param  feedbackRepository  porta de persistência de feedbacks
+     * @return o caso de uso de geração do relatório semanal
+     *
+     * @author Danilo Fernando
+     */
     @Bean
     public RelatorioSemanalGenerateUseCase relatorioSemanalGenerateUseCase(
             RepositoryAvaliacaoPort avaliacaoRepository,

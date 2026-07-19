@@ -6,6 +6,8 @@ package br.com.fiap.SysFeedback.domain.enums;
  * <p>A urgência é derivada automaticamente da nota (0 a 10): quanto menor a nota,
  * maior a urgência. É usada tanto no aviso de itens críticos (mensageria) quanto
  * no relatório semanal (quantidade de avaliações por urgência).</p>
+ *
+ * @author luisbraserv
  */
 public enum Urgencia {
     BAIXA,
@@ -21,8 +23,10 @@ public enum Urgencia {
      *     <li>7 a 10 → {@link #BAIXA}</li>
      * </ul>
      *
-     * @param nota nota da avaliação (0 a 10)
+     * @param  nota  nota da avaliação (0 a 10)
      * @return urgência correspondente
+     *
+     * @author luisbraserv
      */
     public static Urgencia fromNota(int nota) {
         if (nota <= 3) {

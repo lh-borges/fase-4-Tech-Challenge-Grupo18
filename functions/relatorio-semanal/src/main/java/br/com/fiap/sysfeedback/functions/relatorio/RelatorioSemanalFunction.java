@@ -26,6 +26,8 @@ import java.util.Map;
  * (endpoint interno protegido por API key) e formata a mensagem.</p>
  *
  * <p>O conteúdo do evento é irrelevante — o Scheduler apenas dá o "tique" semanal.</p>
+ *
+ * @author Danilo Fernando
  */
 @ApplicationScoped
 public class RelatorioSemanalFunction implements CloudEventsFunction {
@@ -39,6 +41,17 @@ public class RelatorioSemanalFunction implements CloudEventsFunction {
     private final String internalApiKey;
     private final String adminEmail;
 
+    /**
+     * Injeta as dependências e as configurações de acesso ao backend e ao e-mail.
+     *
+     * @param  objectMapper    serializador Jackson usado para ler o relatório
+     * @param  mailer          componente do Quarkus responsável pelo envio de e-mail
+     * @param  appUrl          URL base do backend que expõe o endpoint interno
+     * @param  internalApiKey  chave de API do endpoint interno do backend
+     * @param  adminEmail      endereço do administrador que recebe o relatório
+     *
+     * @author Danilo Fernando
+     */
     @Inject
     public RelatorioSemanalFunction(ObjectMapper objectMapper,
                                     Mailer mailer,
@@ -52,13 +65,31 @@ public class RelatorioSemanalFunction implements CloudEventsFunction {
         this.adminEmail = adminEmail;
     }
 
+    /**
+     * Dispara a geração do relatório: busca os dados no backend e envia o e-mail.
+     *
+     * @param  event  evento do Scheduler que apenas aciona a execução (ignorado)
+     *
+     * @throws Exception  se a busca no backend ou o envio do e-mail falhar
+     *
+     * @author Danilo Fernando
+     */
     @Override
     public void accept(CloudEvent event) throws Exception {
         RelatorioSemanal relatorio = buscarRelatorio();
         enviar(relatorio);
     }
 
-    /** Chama o endpoint interno do backend e desserializa o relatório. */
+    /**
+     * Chama o endpoint interno do backend e desserializa o relatório semanal.
+     *
+     * @return o relatório semanal consolidado retornado pelo backend
+     *
+     * @throws IllegalStateException  se o backend responder com status diferente de 200
+     * @throws Exception              se a chamada HTTP ou a desserialização falhar
+     *
+     * @author Danilo Fernando
+     */
     RelatorioSemanal buscarRelatorio() throws Exception {
         URI uri = URI.create(appUrl + CAMINHO_RELATORIO);
         HttpRequest request = HttpRequest.newBuilder(uri)
@@ -80,7 +111,13 @@ public class RelatorioSemanalFunction implements CloudEventsFunction {
         return objectMapper.readValue(response.body(), RelatorioSemanal.class);
     }
 
-    /** Monta e envia o e-mail do relatório. */
+    /**
+     * Monta e envia por e-mail o relatório semanal ao administrador.
+     *
+     * @param  relatorio  relatório semanal a ser formatado e enviado
+     *
+     * @author Danilo Fernando
+     */
     void enviar(RelatorioSemanal relatorio) {
         String assunto = "[SysFeedback] Relatorio semanal de avaliacoes";
         mailer.send(Mail.withText(adminEmail, assunto, montarCorpo(relatorio)));
@@ -88,6 +125,14 @@ public class RelatorioSemanalFunction implements CloudEventsFunction {
                 adminEmail, relatorio.totalAvaliacoes(), relatorio.mediaNotas());
     }
 
+    /**
+     * Monta o corpo em texto puro do e-mail com período, contagens e detalhamento.
+     *
+     * @param  r  relatório semanal cujos dados serão formatados
+     * @return o texto do corpo do e-mail já formatado
+     *
+     * @author Danilo Fernando
+     */
     String montarCorpo(RelatorioSemanal r) {
         StringBuilder sb = new StringBuilder();
         sb.append("Relatorio semanal de avaliacoes - SysFeedback\n\n");
@@ -117,6 +162,14 @@ public class RelatorioSemanalFunction implements CloudEventsFunction {
         return sb.toString();
     }
 
+    /**
+     * Acrescenta ao corpo as contagens do mapa, ou um aviso quando não há dados.
+     *
+     * @param  sb         acumulador do corpo do e-mail em construção
+     * @param  contagens  mapa de chave para quantidade a ser listado
+     *
+     * @author Danilo Fernando
+     */
     private void appendContagens(StringBuilder sb, Map<String, Long> contagens) {
         if (contagens == null || contagens.isEmpty()) {
             sb.append("  (sem dados)\n");

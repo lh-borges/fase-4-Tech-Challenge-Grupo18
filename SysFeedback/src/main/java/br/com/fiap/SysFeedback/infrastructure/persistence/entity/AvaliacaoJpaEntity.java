@@ -10,6 +10,12 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Entidade JPA que mapeia a tabela {@code avaliacoes}, armazenando descrição,
+ * nota, urgência e data de envio de cada avaliação.
+ *
+ * @author luisbraserv
+ */
 @Entity
 @Table(name = "avaliacoes")
 @Getter

@@ -8,6 +8,14 @@ import java.util.UUID;
 /**
  * Representação de uma avaliação retornada ao cliente,
  * incluindo a urgência derivada da nota e a data de envio.
+ *
+ * @param  id  identificador da avaliação
+ * @param  descricao  texto livre da avaliação
+ * @param  nota  nota atribuída (0 a 10)
+ * @param  urgencia  urgência derivada da nota
+ * @param  dataEnvio  data e hora do envio
+ *
+ * @author luisbraserv
  */
 public record AvaliacaoResponseDTO(
         UUID id,

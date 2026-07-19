@@ -6,6 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * Repositório Spring Data JPA para {@link FeedbackJpaEntity}.
+ *
+ * @author luisbraserv
+ */
 @Repository
 public interface FeedbackJpaRepository extends JpaRepository<FeedbackJpaEntity, UUID> {
 }

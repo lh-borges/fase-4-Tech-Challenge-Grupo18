@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
  *
  * <p>Sem parâmetros, considera os últimos 7 dias. Para testes/reprocessamento,
  * aceita {@code inicio} e {@code fim} (ISO-8601).</p>
+ *
+ * @author Danilo Fernando
  */
 @RestController
 @RequestMapping("/internal/relatorio")
@@ -31,6 +33,15 @@ public class RelatorioInternoController {
 
     private final RelatorioSemanalGenerateUseCase relatorioSemanalGenerateUseCase;
 
+    /**
+     * Gera o relatório semanal do período informado ou dos últimos 7 dias.
+     *
+     * @param  inicio  início do período (opcional; padrão é 7 dias antes do fim)
+     * @param  fim  fim do período (opcional; padrão é o instante atual)
+     * @return resposta 200 com o relatório semanal consolidado
+     *
+     * @author Danilo Fernando
+     */
     @PostMapping("/semanal")
     public ResponseEntity<RelatorioSemanalDTO> gerarSemanal(
             @RequestParam(required = false)
