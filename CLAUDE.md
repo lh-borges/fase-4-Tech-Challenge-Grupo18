@@ -50,9 +50,11 @@ Detalhes das decisões: ver `docs/adr/` e `docs/lessons.md`.
 
 - [x] Backend Spring Boot completo (auth JWT, avaliações, feedback, seed, deploy Cloud Run)
 - [x] Função 1 `notifica-urgente` (Quarkus) — implementada e testada
-- [ ] Publisher Pub/Sub no Spring Boot
-- [ ] Endpoint interno de relatório
-- [ ] Função 2 `relatorio-semanal`
-- [ ] CI de deploy das funções
-- [ ] Migração das funções para native (GraalVM)
-- [ ] README raiz + roteiro do vídeo
+- [x] Publisher Pub/Sub no Spring Boot (best-effort, Clean Architecture)
+- [x] Endpoint interno de relatório (API key)
+- [x] Função 2 `relatorio-semanal` (Quarkus)
+- [x] CI de deploy das funções (`deploy-functions.yml`)
+- [x] README raiz + ADRs + monitoramento + lessons
+- [ ] Migração das funções para native (GraalVM) — diferencial opcional
+- [ ] Roteiro do vídeo (última etapa, com o grupo)
+- [ ] Validação final do grupo + push/execução no GCP
