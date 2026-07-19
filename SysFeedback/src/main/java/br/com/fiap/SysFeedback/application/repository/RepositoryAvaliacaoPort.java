@@ -4,6 +4,7 @@ import br.com.fiap.SysFeedback.domain.entity.Avaliacao;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Porta de persistência de avaliações.
@@ -30,6 +31,17 @@ public interface RepositoryAvaliacaoPort {
      * @author luisbraserv
      */
     List<Avaliacao> findAll();
+
+    /**
+     * Retorna as avaliações das disciplinas informadas (usado para o professor ver
+     * apenas as avaliações das disciplinas que leciona).
+     *
+     * @param  disciplinaIds  identificadores das disciplinas
+     * @return avaliações pertencentes às disciplinas informadas
+     *
+     * @author Danilo Fernando
+     */
+    List<Avaliacao> findByDisciplinaIds(List<UUID> disciplinaIds);
 
     /**
      * Retorna as avaliações com data de envio dentro do período [inicio, fim] (inclusivo).

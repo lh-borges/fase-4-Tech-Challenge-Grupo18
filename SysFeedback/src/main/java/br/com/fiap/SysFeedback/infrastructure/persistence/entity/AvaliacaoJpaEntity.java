@@ -40,4 +40,14 @@ public class AvaliacaoJpaEntity {
 
     @Column(name = "data_envio", nullable = false)
     private LocalDateTime dataEnvio;
+
+    /** Disciplina avaliada (a aula que recebeu o feedback). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "disciplina_id", nullable = false)
+    private DisciplinaJpaEntity disciplina;
+
+    /** Aluno autor da avaliação. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aluno_id")
+    private UserJpaEntity aluno;
 }

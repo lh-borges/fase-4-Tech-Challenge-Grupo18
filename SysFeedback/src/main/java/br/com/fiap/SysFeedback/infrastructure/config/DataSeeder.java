@@ -3,8 +3,10 @@ package br.com.fiap.SysFeedback.infrastructure.config;
 import br.com.fiap.SysFeedback.domain.enums.Role;
 import br.com.fiap.SysFeedback.domain.enums.Urgencia;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.AvaliacaoJpaEntity;
+import br.com.fiap.SysFeedback.infrastructure.persistence.entity.DisciplinaJpaEntity;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.UserJpaEntity;
 import br.com.fiap.SysFeedback.infrastructure.persistence.repository.AvaliacaoJpaRepository;
+import br.com.fiap.SysFeedback.infrastructure.persistence.repository.DisciplinaJpaRepository;
 import br.com.fiap.SysFeedback.infrastructure.persistence.repository.UserJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +19,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Carga inicial de dados. Roda em qualquer ambiente (dev e prod) na subida da
  * aplicação, mas só popula quando o banco está vazio — assim é idempotente e
  * não duplica dados a cada reinício.
  *
- * <p>Cria um usuário de cada role e um conjunto de avaliações distribuídas ao
- * longo dos últimos dias, com notas variadas, para que o relatório de feedback
- * (avaliações por dia e por urgência) tenha dados significativos.</p>
+ * <p>Cria um usuário de cada role, disciplinas com suas relações de ensino
+ * (professor) e matrícula (aluno), e avaliações distribuídas entre as disciplinas,
+ * para demonstrar a regra: o professor vê apenas as disciplinas que leciona e o
+ * admin vê todas.</p>
  *
  * @author luisbraserv
  */
@@ -37,15 +41,17 @@ public class DataSeeder {
     /**
      * Registra o runner de carga inicial executado na subida da aplicação.
      *
-     * @param  userRepository  repositório de usuários usado para verificar e popular a base
-     * @param  avaliacaoRepository  repositório de avaliações usado para verificar e popular a base
+     * @param  userRepository  repositório de usuários
+     * @param  disciplinaRepository  repositório de disciplinas
+     * @param  avaliacaoRepository  repositório de avaliações
      * @param  passwordEncoder  codificador aplicado às senhas dos usuários semeados
      * @return runner que popula a base apenas quando ela está vazia
      *
-     * @author luisbraserv
+     * @author Danilo Fernando
      */
     @Bean
     public CommandLineRunner seedDatabase(UserJpaRepository userRepository,
+                                          DisciplinaJpaRepository disciplinaRepository,
                                           AvaliacaoJpaRepository avaliacaoRepository,
                                           PasswordEncoder passwordEncoder) {
         return args -> {
@@ -53,8 +59,8 @@ public class DataSeeder {
                 return;
             }
             try {
-                popular(userRepository, avaliacaoRepository, passwordEncoder);
-                log.info("Carga inicial concluída: usuários e avaliações criados.");
+                popular(userRepository, disciplinaRepository, avaliacaoRepository, passwordEncoder);
+                log.info("Carga inicial concluída: usuários, disciplinas e avaliações criados.");
             } catch (DataIntegrityViolationException e) {
                 // Outra instância populou o banco em paralelo (ex.: cold starts
                 // simultâneos no Cloud Run). Não é fatal: seguimos sem abortar a subida.
@@ -64,40 +70,57 @@ public class DataSeeder {
     }
 
     /**
-     * Persiste os usuários e as avaliações de exemplo na base.
+     * Persiste usuários, disciplinas (com relações) e avaliações de exemplo.
      *
-     * @param  userRepository  repositório onde os usuários de exemplo são salvos
-     * @param  avaliacaoRepository  repositório onde as avaliações de exemplo são salvas
-     * @param  passwordEncoder  codificador aplicado às senhas dos usuários criados
+     * @param  userRepository  repositório de usuários
+     * @param  disciplinaRepository  repositório de disciplinas
+     * @param  avaliacaoRepository  repositório de avaliações
+     * @param  passwordEncoder  codificador aplicado às senhas
      *
-     * @author luisbraserv
+     * @author Danilo Fernando
      */
     private void popular(UserJpaRepository userRepository,
+                         DisciplinaJpaRepository disciplinaRepository,
                          AvaliacaoJpaRepository avaliacaoRepository,
                          PasswordEncoder passwordEncoder) {
+
         userRepository.save(novoUsuario("Admin Teste", "admin@fiap.com", "123456", Role.ADMIN, passwordEncoder));
-        userRepository.save(novoUsuario("Professor Teste", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
-        userRepository.save(novoUsuario("Aluno Teste", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+        UserJpaEntity professor = userRepository.save(
+                novoUsuario("Professor Teste", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
+        UserJpaEntity aluno = userRepository.save(
+                novoUsuario("Aluno Teste", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+
+        // O professor leciona Arquitetura e Banco de Dados; o aluno está matriculado
+        // nas três. DevOps não é lecionada pelo professor (só o admin verá suas avaliações).
+        DisciplinaJpaEntity arquitetura = novaDisciplina("Arquitetura de Software", "ARQ", Set.of(professor), Set.of(aluno));
+        DisciplinaJpaEntity bancoDados = novaDisciplina("Banco de Dados", "BD", Set.of(professor), Set.of(aluno));
+        DisciplinaJpaEntity devops = novaDisciplina("DevOps na Nuvem", "DEVOPS", Set.of(), Set.of(aluno));
+        disciplinaRepository.save(arquitetura);
+        disciplinaRepository.save(bancoDados);
+        disciplinaRepository.save(devops);
 
         List<AvaliacaoJpaEntity> avaliacoes = new ArrayList<>();
-        avaliacoes.add(novaAvaliacao("Aula muito confusa, o professor pulou etapas importantes", 1, 9, 10));
-        avaliacoes.add(novaAvaliacao("Nao consegui acompanhar, faltou material de apoio", 3, 9, 2));
-        avaliacoes.add(novaAvaliacao("Conteudo bom mas o audio estava ruim", 5, 8, 14));
-        avaliacoes.add(novaAvaliacao("Aula ok, poderia ter mais exemplos praticos", 6, 8, 4));
-        avaliacoes.add(novaAvaliacao("Otima explicacao, gostei bastante", 9, 7, 11));
-        avaliacoes.add(novaAvaliacao("Excelente aula, muito didatica", 10, 7, 3));
-        avaliacoes.add(novaAvaliacao("Plataforma travou algumas vezes durante a live", 4, 6, 15));
-        avaliacoes.add(novaAvaliacao("Professor dominou o assunto, recomendo", 8, 6, 6));
-        avaliacoes.add(novaAvaliacao("Ritmo muito acelerado, dificil de acompanhar", 2, 5, 20));
-        avaliacoes.add(novaAvaliacao("Gostei dos exercicios propostos", 7, 5, 9));
-        avaliacoes.add(novaAvaliacao("Aula sem preparo, muito improviso", 2, 4, 13));
-        avaliacoes.add(novaAvaliacao("Bom conteudo, mas comecou atrasada", 6, 4, 1));
-        avaliacoes.add(novaAvaliacao("Melhor aula do modulo ate agora", 10, 3, 16));
-        avaliacoes.add(novaAvaliacao("Faltou aprofundar nos topicos avancados", 5, 3, 5));
-        avaliacoes.add(novaAvaliacao("Muito boa, tirei todas as minhas duvidas", 9, 2, 12));
-        avaliacoes.add(novaAvaliacao("Nao recomendo, desorganizada do inicio ao fim", 0, 2, 21));
-        avaliacoes.add(novaAvaliacao("Aula razoavel, nada excepcional", 6, 1, 8));
-        avaliacoes.add(novaAvaliacao("Adorei os estudos de caso reais", 8, 0, 7));
+        // Arquitetura de Software
+        avaliacoes.add(novaAvaliacao("Aula muito confusa, o professor pulou etapas importantes", 1, 9, 10, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Nao consegui acompanhar, faltou material de apoio", 3, 9, 2, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Conteudo bom mas o audio estava ruim", 5, 8, 14, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Otima explicacao, gostei bastante", 9, 7, 11, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Excelente aula, muito didatica", 10, 7, 3, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Ritmo muito acelerado, dificil de acompanhar", 2, 5, 20, arquitetura, aluno));
+        avaliacoes.add(novaAvaliacao("Melhor aula do modulo ate agora", 10, 3, 16, arquitetura, aluno));
+        // Banco de Dados
+        avaliacoes.add(novaAvaliacao("Aula ok, poderia ter mais exemplos praticos", 6, 8, 4, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Plataforma travou algumas vezes durante a live", 4, 6, 15, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Professor dominou o assunto, recomendo", 8, 6, 6, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Gostei dos exercicios propostos", 7, 5, 9, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Aula sem preparo, muito improviso", 2, 4, 13, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Bom conteudo, mas comecou atrasada", 6, 4, 1, bancoDados, aluno));
+        avaliacoes.add(novaAvaliacao("Faltou aprofundar nos topicos avancados", 5, 3, 5, bancoDados, aluno));
+        // DevOps na Nuvem (não lecionada pelo professor)
+        avaliacoes.add(novaAvaliacao("Muito boa, tirei todas as minhas duvidas", 9, 2, 12, devops, aluno));
+        avaliacoes.add(novaAvaliacao("Nao recomendo, desorganizada do inicio ao fim", 0, 2, 21, devops, aluno));
+        avaliacoes.add(novaAvaliacao("Aula razoavel, nada excepcional", 6, 1, 8, devops, aluno));
+        avaliacoes.add(novaAvaliacao("Adorei os estudos de caso reais", 8, 0, 7, devops, aluno));
 
         avaliacaoRepository.saveAll(avaliacoes);
     }
@@ -126,18 +149,40 @@ public class DataSeeder {
     }
 
     /**
-     * Monta uma avaliação de exemplo com urgência derivada da nota e data no passado.
+     * Monta uma disciplina com seus professores e alunos matriculados.
+     *
+     * @param  nome  nome da disciplina
+     * @param  codigo  código curto identificador
+     * @param  professores  professores que lecionam a disciplina
+     * @param  alunos  alunos matriculados na disciplina
+     * @return entidade de disciplina pronta para persistência
+     *
+     * @author Danilo Fernando
+     */
+    private DisciplinaJpaEntity novaDisciplina(String nome, String codigo,
+                                               Set<UserJpaEntity> professores, Set<UserJpaEntity> alunos) {
+        DisciplinaJpaEntity disciplina = new DisciplinaJpaEntity(nome, codigo);
+        disciplina.setProfessores(new java.util.HashSet<>(professores));
+        disciplina.setAlunos(new java.util.HashSet<>(alunos));
+        return disciplina;
+    }
+
+    /**
+     * Monta uma avaliação de exemplo com urgência derivada da nota, data no passado,
+     * disciplina e aluno autor.
      *
      * @param  descricao  texto descritivo da avaliação
      * @param  nota  nota atribuída, usada para calcular a urgência
      * @param  diasAtras  quantos dias no passado a avaliação foi enviada
      * @param  horaDoDia  hora do dia (0-23) do envio
+     * @param  disciplina  disciplina avaliada
+     * @param  aluno  aluno autor da avaliação
      * @return entidade de avaliação pronta para persistência
      *
-     * @author luisbraserv
+     * @author Danilo Fernando
      */
-    private AvaliacaoJpaEntity novaAvaliacao(String descricao, int nota,
-                                             int diasAtras, int horaDoDia) {
+    private AvaliacaoJpaEntity novaAvaliacao(String descricao, int nota, int diasAtras, int horaDoDia,
+                                             DisciplinaJpaEntity disciplina, UserJpaEntity aluno) {
         AvaliacaoJpaEntity avaliacao = new AvaliacaoJpaEntity();
         avaliacao.setDescricao(descricao);
         avaliacao.setNota(nota);
@@ -145,6 +190,8 @@ public class DataSeeder {
         avaliacao.setDataEnvio(
                 LocalDateTime.now().minusDays(diasAtras).withHour(horaDoDia).withMinute(0).withSecond(0).withNano(0)
         );
+        avaliacao.setDisciplina(disciplina);
+        avaliacao.setAluno(aluno);
         return avaliacao;
     }
 }

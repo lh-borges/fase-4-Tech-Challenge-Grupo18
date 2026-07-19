@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api.js'
 
 const props = defineProps({ token: String })
 
+const disciplinas = ref([])
+const disciplinaId = ref('')
 const descricao = ref('')
 const nota = ref(7)
 const loading = ref(false)
@@ -14,12 +16,21 @@ const urgencia = computed(() =>
   nota.value <= 3 ? 'ALTA' : nota.value <= 6 ? 'MEDIA' : 'BAIXA'
 )
 
+async function carregarDisciplinas() {
+  try {
+    disciplinas.value = await api.listarDisciplinas(props.token)
+    if (disciplinas.value.length) disciplinaId.value = disciplinas.value[0].id
+  } catch (e) {
+    error.value = 'Não foi possível carregar suas disciplinas. ' + e.message
+  }
+}
+
 async function enviar() {
   loading.value = true
   error.value = ''
   sucesso.value = false
   try {
-    await api.criarAvaliacao(props.token, descricao.value, nota.value)
+    await api.criarAvaliacao(props.token, descricao.value, nota.value, disciplinaId.value)
     sucesso.value = true
     descricao.value = ''
     nota.value = 7
@@ -29,12 +40,22 @@ async function enviar() {
     loading.value = false
   }
 }
+
+onMounted(carregarDisciplinas)
 </script>
 
 <template>
   <div class="card form">
     <h2>Avaliar aula</h2>
-    <p class="muted">Seu feedback ajuda a melhorar as próximas aulas.</p>
+    <p class="muted">Escolha a disciplina e envie seu feedback.</p>
+
+    <label>Disciplina</label>
+    <select v-model="disciplinaId" class="select">
+      <option v-for="d in disciplinas" :key="d.id" :value="d.id">
+        {{ d.nome }} ({{ d.codigo }})
+      </option>
+    </select>
+    <p v-if="!disciplinas.length" class="muted">Você não está matriculado em nenhuma disciplina.</p>
 
     <label>Como foi a aula?</label>
     <textarea
@@ -58,7 +79,7 @@ async function enviar() {
     />
     <div class="scale"><span>0</span><span>5</span><span>10</span></div>
 
-    <button class="primary" :disabled="loading || !descricao.trim()" @click="enviar">
+    <button class="primary" :disabled="loading || !descricao.trim() || !disciplinaId" @click="enviar">
       {{ loading ? 'Enviando…' : 'Enviar avaliação' }}
     </button>
 

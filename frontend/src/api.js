@@ -40,8 +40,11 @@ export const api = {
   login: (email, password) =>
     request('/auth/login', { method: 'POST', body: { email, password } }),
 
-  criarAvaliacao: (token, descricao, nota) =>
-    request('/avaliacoes', { method: 'POST', token, body: { descricao, nota } }),
+  listarDisciplinas: (token) => request('/disciplinas', { token }),
 
-  listarAvaliacoes: (token) => request('/avaliacoes', { token })
+  criarAvaliacao: (token, descricao, nota, disciplinaId) =>
+    request('/avaliacoes', { method: 'POST', token, body: { descricao, nota, disciplinaId } }),
+
+  listarAvaliacoes: (token, disciplinaId) =>
+    request(`/avaliacoes${disciplinaId ? `?disciplinaId=${disciplinaId}` : ''}`, { token })
 }

@@ -2,6 +2,7 @@ package br.com.fiap.SysFeedback.infrastructure.config;
 
 import br.com.fiap.SysFeedback.application.messaging.NotificadorUrgentePort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryAvaliacaoPort;
+import br.com.fiap.SysFeedback.application.repository.RepositoryDisciplinaPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryFeedbackPort;
 import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
 import br.com.fiap.SysFeedback.application.security.PasswordEncoderPort;
@@ -109,22 +110,39 @@ public class UseCaseConfig {
     @Bean
     public AvaliacaoCreateUseCase avaliacaoCreateUseCase(
             RepositoryAvaliacaoPort repository,
+            RepositoryDisciplinaPort disciplinaRepository,
             NotificadorUrgentePort notificadorUrgentePort) {
 
-        return new AvaliacaoCreateUseCase(repository, notificadorUrgentePort);
+        return new AvaliacaoCreateUseCase(repository, disciplinaRepository, notificadorUrgentePort);
     }
 
     /**
-     * Cria o caso de uso de listagem de avaliações.
+     * Cria o caso de uso de listagem de avaliações ciente do perfil (professor vê
+     * apenas as disciplinas que leciona; admin vê todas).
      *
      * @param  repository  porta de persistência de avaliações
+     * @param  disciplinaRepository  porta de consulta de disciplinas
      * @return o caso de uso de listagem de avaliações
      *
-     * @author Thiago de Jesus
+     * @author Danilo Fernando
      */
     @Bean
-    public AvaliacaoFindAllUseCase avaliacaoFindAllUseCase(RepositoryAvaliacaoPort repository) {
-        return new AvaliacaoFindAllUseCase(repository);
+    public AvaliacaoFindUseCase avaliacaoFindUseCase(RepositoryAvaliacaoPort repository,
+                                                     RepositoryDisciplinaPort disciplinaRepository) {
+        return new AvaliacaoFindUseCase(repository, disciplinaRepository);
+    }
+
+    /**
+     * Cria o caso de uso de listagem de disciplinas escopado pelo perfil.
+     *
+     * @param  disciplinaRepository  porta de consulta de disciplinas
+     * @return o caso de uso de listagem de disciplinas
+     *
+     * @author Danilo Fernando
+     */
+    @Bean
+    public DisciplinaFindUseCase disciplinaFindUseCase(RepositoryDisciplinaPort disciplinaRepository) {
+        return new DisciplinaFindUseCase(disciplinaRepository);
     }
 
     // ----- Feedback -----

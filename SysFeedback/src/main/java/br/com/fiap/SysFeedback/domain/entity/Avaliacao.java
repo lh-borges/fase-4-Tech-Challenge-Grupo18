@@ -27,24 +27,34 @@ public class Avaliacao {
     private final int nota;
     private final Urgencia urgencia;
     private final LocalDateTime dataEnvio;
+    private final UUID disciplinaId;
+    private final UUID alunoId;
 
     /**
-     * Cria uma nova avaliação, derivando a urgência da nota e registrando a data de envio.
+     * Cria uma nova avaliação de uma disciplina, derivando a urgência da nota e
+     * registrando a data de envio.
      *
      * @param  descricao  texto livre da avaliação
      * @param  nota  nota atribuída (0 a 10)
+     * @param  disciplinaId  disciplina avaliada
+     * @param  alunoId  aluno autor da avaliação
      *
-     * @throws AvaliacaoInvalidaException  quando a descrição é vazia ou a nota está fora do intervalo
+     * @throws AvaliacaoInvalidaException  quando a descrição é vazia, a nota está fora do intervalo ou falta a disciplina
      *
-     * @author luisbraserv
+     * @author Danilo Fernando
      */
-    public Avaliacao(String descricao, int nota) {
+    public Avaliacao(String descricao, int nota, UUID disciplinaId, UUID alunoId) {
         validar(descricao, nota);
+        if (disciplinaId == null) {
+            throw new AvaliacaoInvalidaException("Disciplina é obrigatória");
+        }
 
         this.descricao = descricao;
         this.nota = nota;
         this.urgencia = Urgencia.fromNota(nota);
         this.dataEnvio = LocalDateTime.now();
+        this.disciplinaId = disciplinaId;
+        this.alunoId = alunoId;
     }
 
     /**
@@ -55,12 +65,15 @@ public class Avaliacao {
      * @param  nota  nota atribuída (0 a 10)
      * @param  urgencia  urgência já calculada da avaliação
      * @param  dataEnvio  data e hora do envio original
+     * @param  disciplinaId  disciplina avaliada
+     * @param  alunoId  aluno autor da avaliação
      *
      * @throws AvaliacaoInvalidaException  quando a descrição é vazia ou a nota está fora do intervalo
      *
      * @author luisbraserv
      */
-    public Avaliacao(UUID id, String descricao, int nota, Urgencia urgencia, LocalDateTime dataEnvio) {
+    public Avaliacao(UUID id, String descricao, int nota, Urgencia urgencia, LocalDateTime dataEnvio,
+                     UUID disciplinaId, UUID alunoId) {
         validar(descricao, nota);
 
         this.id = id;
@@ -68,6 +81,8 @@ public class Avaliacao {
         this.nota = nota;
         this.urgencia = urgencia;
         this.dataEnvio = dataEnvio;
+        this.disciplinaId = disciplinaId;
+        this.alunoId = alunoId;
     }
 
     /**
