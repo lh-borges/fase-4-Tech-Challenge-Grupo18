@@ -56,3 +56,48 @@ da Fase 4.
 
 **Pendências relacionadas:** publisher no Spring Boot precisa publicar o JSON do
 contrato (ADR 0003) no tópico `feedback-urgente` quando a avaliação for ALTA.
+
+---
+
+## 2026-07-19 — Publisher Pub/Sub no Spring Boot (produtor)
+
+Lado produtor que fecha o ciclo da função 1. Ao registrar avaliação **ALTA**, o
+backend publica no tópico `feedback-urgente`.
+
+- Porta `NotificadorUrgentePort` (application) + adapter `PubSubNotificadorAdapter`
+  (infrastructure) — Clean Architecture preservada. O use case decide o que é
+  crítico; a infra só transporta.
+- **Best-effort:** falha de publicação nunca quebra o cadastro da avaliação.
+- **Degrada sem GCP:** `gcp.project-id` vazio → loga e ignora (dev local e
+  `contextLoads` seguem funcionando). Em prod, projeto explícito + ADC.
+- **`libraries-bom`** alinha as versões do ecossistema GCP.
+- Armadilha: `com.google.cloud.ServiceOptions` está em `google-cloud-core` (não vem
+  transitivo do pubsub) — removido, usamos só o project-id configurado.
+
+## 2026-07-19 — Endpoint interno de relatório
+
+A função de relatório precisa dos dados agregados, mas `/feedback` exige JWT de
+usuário. Criamos `POST /internal/relatorio/semanal` protegido por **API key**
+(`X-Internal-Api-Key`), acesso máquina-a-máquina.
+
+- `InternalApiKeyFilter` (fail-closed, comparação em tempo constante) guarda
+  `/internal/**`; `SecurityConfig` libera o path e registra o filtro.
+- Armadilha: `addFilterBefore(x, JwtAuthFilter.class)` falha — a âncora precisa ser
+  um filtro **conhecido** do Spring Security (`UsernamePasswordAuthenticationFilter`),
+  não um filtro custom.
+- Reutiliza o domínio `Feedback` (média + contagens) e persiste o snapshot; devolve
+  também a lista de avaliações para o e-mail.
+
+## 2026-07-19 — Função 2: relatorio-semanal + CI
+
+- Função Quarkus gen2 acionada por Cloud Scheduler → Pub/Sub `relatorio-semanal`.
+  Busca o relatório via `HttpClient` (JDK, sem dependência extra) no endpoint interno
+  e envia o e-mail. Núcleo (`montarCorpo`/`enviar`) separado do HTTP para testar.
+- Quarkus GCF gera `target/deployment/` com o runner jar — é o `--source` do
+  `gcloud functions deploy`.
+- CI `deploy-functions.yml`: matriz por função, deploy por *path*, tópicos e
+  Scheduler idempotentes, segredos via Secret Manager, IAM mínimo documentado.
+
+**Integração:** todas as branches mergeadas na `main`. Único conflito real —
+`application.properties` (blocos gcp.* e internal.api-key inseridos no mesmo ponto) —
+resolvido mantendo ambos.
