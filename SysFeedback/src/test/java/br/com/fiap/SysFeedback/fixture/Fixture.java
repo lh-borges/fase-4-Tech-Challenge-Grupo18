@@ -7,11 +7,15 @@ import br.com.fiap.SysFeedback.application.dto.FeedbackResponseDTO;
 import br.com.fiap.SysFeedback.application.dto.UserRequestDTO;
 import br.com.fiap.SysFeedback.application.dto.UserResponseDTO;
 import br.com.fiap.SysFeedback.application.dto.UserUpdateDTO;
+import br.com.fiap.SysFeedback.domain.entity.Avaliacao;
+import br.com.fiap.SysFeedback.domain.entity.Feedback;
+import br.com.fiap.SysFeedback.domain.entity.User;
 import br.com.fiap.SysFeedback.domain.enums.Role;
 import br.com.fiap.SysFeedback.domain.enums.Urgencia;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +46,7 @@ public final class Fixture {
     public static final String USER_NAME = "Aluno Teste";
     public static final String USER_EMAIL = "aluno@fiap.com";
     public static final String USER_PASSWORD = "123456";
+    public static final String USER_ENCODED_PASSWORD = "$2a$10$encoded-password";
     public static final Role USER_ROLE = Role.ALUNO;
     public static final LocalDateTime USER_CREATED_AT =
             LocalDateTime.of(2026, 7, 18, 9, 0);
@@ -71,6 +76,29 @@ public final class Fixture {
         return new AvaliacaoResponseDTO(null, null, NOTA_AVALIACAO, null, null);
     }
 
+    public static Avaliacao avaliacao() {
+        return new Avaliacao(
+                AVALIACAO_ID,
+                DESCRICAO_AVALIACAO,
+                NOTA_AVALIACAO,
+                Urgencia.BAIXA,
+                DATA_ENVIO
+        );
+    }
+
+    public static List<Avaliacao> avaliacoes() {
+        return List.of(
+                avaliacao(),
+                new Avaliacao(
+                        UUID.fromString("44444444-4444-4444-4444-444444444444"),
+                        "Aula confusa",
+                        2,
+                        Urgencia.ALTA,
+                        LocalDateTime.of(2026, 7, 17, 10, 0)
+                )
+        );
+    }
+
     public static FeedbackRequestDTO feedbackRequestDTOValido() {
         return new FeedbackRequestDTO(PERIODO_INICIO, PERIODO_FIM);
     }
@@ -81,6 +109,19 @@ public final class Fixture {
 
     public static FeedbackResponseDTO feedbackResponseDTO() {
         return new FeedbackResponseDTO(
+                FEEDBACK_ID,
+                PERIODO_INICIO,
+                PERIODO_FIM,
+                MEDIA_NOTAS,
+                TOTAL_AVALIACOES,
+                avaliacoesPorDia(),
+                avaliacoesPorUrgencia(),
+                FEEDBACK_GERADO_EM
+        );
+    }
+
+    public static Feedback feedback() {
+        return new Feedback(
                 FEEDBACK_ID,
                 PERIODO_INICIO,
                 PERIODO_FIM,
@@ -132,6 +173,10 @@ public final class Fixture {
         return new UserUpdateDTO(USER_NAME, USER_EMAIL, USER_PASSWORD, USER_ROLE);
     }
 
+    public static UserUpdateDTO userUpdateDTO(String name, String email, String password, Role role) {
+        return new UserUpdateDTO(name, email, password, role);
+    }
+
     public static UserUpdateDTO userUpdateDTOComNulos() {
         return new UserUpdateDTO(null, null, null, null);
     }
@@ -142,5 +187,46 @@ public final class Fixture {
 
     public static UserResponseDTO userResponseDTOComNulos() {
         return new UserResponseDTO(null, null, null, null, null);
+    }
+
+    public static User user() {
+        return new User(
+                USER_ID,
+                USER_NAME,
+                USER_EMAIL,
+                USER_PASSWORD,
+                USER_ROLE,
+                USER_CREATED_AT
+        );
+    }
+
+    public static User userComSenhaCriptografada() {
+        return new User(
+                USER_ID,
+                USER_NAME,
+                USER_EMAIL,
+                USER_ENCODED_PASSWORD,
+                USER_ROLE,
+                USER_CREATED_AT
+        );
+    }
+
+    public static User professor() {
+        return new User(
+                UUID.fromString("55555555-5555-5555-5555-555555555555"),
+                "Professor Teste",
+                "professor@fiap.com",
+                USER_PASSWORD,
+                Role.PROFESSOR,
+                USER_CREATED_AT
+        );
+    }
+
+    public static List<User> users() {
+        return List.of(user(), professor());
+    }
+
+    public static List<Feedback> feedbacks() {
+        return List.of(feedback());
     }
 }
