@@ -31,7 +31,21 @@
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<archunit.version>1.4.1</archunit.version>
 		<jacoco.version>0.8.13</jacoco.version>
+		<google-cloud-libraries-bom.version>26.43.0</google-cloud-libraries-bom.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Alinha as versoes das bibliotecas GCP (Pub/Sub, gRPC, protobuf) -->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>libraries-bom</artifactId>
+				<version>${google-cloud-libraries-bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 	<!-- Spring Boot Web -->
@@ -84,6 +98,12 @@
 		<groupId>com.google.cloud.sql</groupId>
 		<artifactId>postgres-socket-factory</artifactId>
 		<version>1.19.0</version>
+	</dependency>
+
+	<!-- Google Cloud Pub/Sub: publica eventos de avaliacao urgente -->
+	<dependency>
+		<groupId>com.google.cloud</groupId>
+		<artifactId>google-cloud-pubsub</artifactId>
 	</dependency>
 
 	<!-- JWT Dependencies -->

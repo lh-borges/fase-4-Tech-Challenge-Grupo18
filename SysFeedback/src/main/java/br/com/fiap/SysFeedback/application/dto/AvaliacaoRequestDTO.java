@@ -6,9 +6,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 /**
  * Payload de entrada de uma avaliação (POST /avaliacoes).
- * Segue a referência do desafio: descrição e nota (0 a 10).
+ * Segue a referência do desafio (descrição e nota 0 a 10) e indica a disciplina avaliada.
+ *
+ * @param  descricao  texto livre da avaliação (obrigatório, até 1000 caracteres)
+ * @param  nota  nota atribuída (obrigatória, entre 0 e 10)
+ * @param  disciplinaId  disciplina avaliada (obrigatória; o aluno deve estar matriculado)
+ *
+ * @author luisbraserv
  */
 public record AvaliacaoRequestDTO(
 
@@ -21,6 +29,9 @@ public record AvaliacaoRequestDTO(
         @NotNull(message = "Nota é obrigatória")
         @Min(value = 0, message = "Nota mínima é 0")
         @Max(value = 10, message = "Nota máxima é 10")
-        Integer nota
+        Integer nota,
+
+        @NotNull(message = "Disciplina é obrigatória")
+        UUID disciplinaId
 ) {
 }

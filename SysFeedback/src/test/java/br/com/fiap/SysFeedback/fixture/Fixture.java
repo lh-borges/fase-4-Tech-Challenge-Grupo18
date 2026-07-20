@@ -29,6 +29,9 @@ public final class Fixture {
     public static final int NOTA_AVALIACAO = 9;
     public static final LocalDateTime DATA_ENVIO =
             LocalDateTime.of(2026, 7, 18, 10, 30);
+    public static final UUID DISCIPLINA_ID =
+            UUID.fromString("66666666-6666-6666-6666-666666666666");
+    public static final String DISCIPLINA_NOME = "Arquitetura";
 
     public static final UUID FEEDBACK_ID =
             UUID.fromString("22222222-2222-2222-2222-222222222222");
@@ -55,11 +58,11 @@ public final class Fixture {
     }
 
     public static AvaliacaoRequestDTO avaliacaoRequestDTOValida() {
-        return new AvaliacaoRequestDTO(DESCRICAO_AVALIACAO, NOTA_AVALIACAO);
+        return new AvaliacaoRequestDTO(DESCRICAO_AVALIACAO, NOTA_AVALIACAO, DISCIPLINA_ID);
     }
 
     public static AvaliacaoRequestDTO avaliacaoRequestDTO(String descricao, Integer nota) {
-        return new AvaliacaoRequestDTO(descricao, nota);
+        return new AvaliacaoRequestDTO(descricao, nota, DISCIPLINA_ID);
     }
 
     public static AvaliacaoResponseDTO avaliacaoResponseDTO() {
@@ -68,12 +71,14 @@ public final class Fixture {
                 DESCRICAO_AVALIACAO,
                 NOTA_AVALIACAO,
                 Urgencia.BAIXA,
-                DATA_ENVIO
+                DATA_ENVIO,
+                DISCIPLINA_ID,
+                DISCIPLINA_NOME
         );
     }
 
     public static AvaliacaoResponseDTO avaliacaoResponseDTOComNulos() {
-        return new AvaliacaoResponseDTO(null, null, NOTA_AVALIACAO, null, null);
+        return new AvaliacaoResponseDTO(null, null, NOTA_AVALIACAO, null, null, null, null);
     }
 
     public static Avaliacao avaliacao() {
@@ -82,7 +87,9 @@ public final class Fixture {
                 DESCRICAO_AVALIACAO,
                 NOTA_AVALIACAO,
                 Urgencia.BAIXA,
-                DATA_ENVIO
+                DATA_ENVIO,
+                DISCIPLINA_ID,
+                USER_ID
         );
     }
 
@@ -94,7 +101,9 @@ public final class Fixture {
                         "Aula confusa",
                         2,
                         Urgencia.ALTA,
-                        LocalDateTime.of(2026, 7, 17, 10, 0)
+                        LocalDateTime.of(2026, 7, 17, 10, 0),
+                        DISCIPLINA_ID,
+                        USER_ID
                 )
         );
     }

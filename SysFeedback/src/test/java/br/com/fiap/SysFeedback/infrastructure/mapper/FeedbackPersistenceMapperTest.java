@@ -1,7 +1,6 @@
 package br.com.fiap.SysFeedback.infrastructure.mapper;
 
 import br.com.fiap.SysFeedback.domain.entity.Feedback;
-import br.com.fiap.SysFeedback.domain.enums.Urgencia;
 import br.com.fiap.SysFeedback.fixture.Fixture;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.FeedbackJpaEntity;
 import org.junit.jupiter.api.Test;
@@ -11,10 +10,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FeedbackPersistenceMapperTest {
 

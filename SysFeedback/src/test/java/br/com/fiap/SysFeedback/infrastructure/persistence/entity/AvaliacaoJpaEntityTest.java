@@ -14,12 +14,24 @@ class AvaliacaoJpaEntityTest {
 
     @Test
     void deveCriarComConstrutorCompleto() {
+        DisciplinaJpaEntity disciplina = new DisciplinaJpaEntity(Fixture.DISCIPLINA_NOME, "ARQ");
+        disciplina.setId(Fixture.DISCIPLINA_ID);
+        UserJpaEntity aluno = new UserJpaEntity(
+                Fixture.USER_ID,
+                Fixture.USER_NAME,
+                Fixture.USER_EMAIL,
+                Fixture.USER_PASSWORD,
+                Fixture.USER_ROLE,
+                Fixture.USER_CREATED_AT
+        );
         AvaliacaoJpaEntity entity = new AvaliacaoJpaEntity(
                 Fixture.AVALIACAO_ID,
                 Fixture.DESCRICAO_AVALIACAO,
                 Fixture.NOTA_AVALIACAO,
                 Urgencia.BAIXA,
-                Fixture.DATA_ENVIO
+                Fixture.DATA_ENVIO,
+                disciplina,
+                aluno
         );
 
         assertEquals(Fixture.AVALIACAO_ID, entity.getId());
@@ -27,6 +39,8 @@ class AvaliacaoJpaEntityTest {
         assertEquals(Fixture.NOTA_AVALIACAO, entity.getNota());
         assertEquals(Urgencia.BAIXA, entity.getUrgencia());
         assertEquals(Fixture.DATA_ENVIO, entity.getDataEnvio());
+        assertEquals(Fixture.DISCIPLINA_ID, entity.getDisciplina().getId());
+        assertEquals(Fixture.USER_ID, entity.getAluno().getId());
     }
 
     @Test

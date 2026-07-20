@@ -13,12 +13,19 @@ class AvaliacaoTest {
 
     @Test
     void deveCriarAvaliacaoNovaComUrgenciaEDataAutomaticas() {
-        Avaliacao avaliacao = new Avaliacao(Fixture.DESCRICAO_AVALIACAO, Fixture.NOTA_AVALIACAO);
+        Avaliacao avaliacao = new Avaliacao(
+                Fixture.DESCRICAO_AVALIACAO,
+                Fixture.NOTA_AVALIACAO,
+                Fixture.DISCIPLINA_ID,
+                Fixture.USER_ID
+        );
 
         assertEquals(Fixture.DESCRICAO_AVALIACAO, avaliacao.getDescricao());
         assertEquals(Fixture.NOTA_AVALIACAO, avaliacao.getNota());
         assertEquals(Urgencia.BAIXA, avaliacao.getUrgencia());
         assertNotNull(avaliacao.getDataEnvio());
+        assertEquals(Fixture.DISCIPLINA_ID, avaliacao.getDisciplinaId());
+        assertEquals(Fixture.USER_ID, avaliacao.getAlunoId());
     }
 
     @Test
@@ -34,7 +41,12 @@ class AvaliacaoTest {
 
     @Test
     void deveAlterarId() {
-        Avaliacao avaliacao = new Avaliacao(Fixture.DESCRICAO_AVALIACAO, Fixture.NOTA_AVALIACAO);
+        Avaliacao avaliacao = new Avaliacao(
+                Fixture.DESCRICAO_AVALIACAO,
+                Fixture.NOTA_AVALIACAO,
+                Fixture.DISCIPLINA_ID,
+                Fixture.USER_ID
+        );
 
         avaliacao.setId(Fixture.AVALIACAO_ID);
 
@@ -43,15 +55,23 @@ class AvaliacaoTest {
 
     @Test
     void deveLancarExcecaoQuandoDescricaoForNulaOuVazia() {
-        assertThrows(AvaliacaoInvalidaException.class, () -> new Avaliacao(null, 8));
-        assertThrows(AvaliacaoInvalidaException.class, () -> new Avaliacao(" ", 8));
+        assertThrows(AvaliacaoInvalidaException.class,
+                () -> new Avaliacao(null, 8, Fixture.DISCIPLINA_ID, Fixture.USER_ID));
+        assertThrows(AvaliacaoInvalidaException.class,
+                () -> new Avaliacao(" ", 8, Fixture.DISCIPLINA_ID, Fixture.USER_ID));
     }
 
     @Test
     void deveLancarExcecaoQuandoNotaForMenorQueZeroOuMaiorQueDez() {
         assertThrows(AvaliacaoInvalidaException.class,
-                () -> new Avaliacao(Fixture.DESCRICAO_AVALIACAO, -1));
+                () -> new Avaliacao(Fixture.DESCRICAO_AVALIACAO, -1, Fixture.DISCIPLINA_ID, Fixture.USER_ID));
         assertThrows(AvaliacaoInvalidaException.class,
-                () -> new Avaliacao(Fixture.DESCRICAO_AVALIACAO, 11));
+                () -> new Avaliacao(Fixture.DESCRICAO_AVALIACAO, 11, Fixture.DISCIPLINA_ID, Fixture.USER_ID));
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoDisciplinaForNula() {
+        assertThrows(AvaliacaoInvalidaException.class,
+                () -> new Avaliacao(Fixture.DESCRICAO_AVALIACAO, 8, null, Fixture.USER_ID));
     }
 }

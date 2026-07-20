@@ -57,7 +57,9 @@ class AvaliacaoResponseDTOTest {
                 Fixture.DESCRICAO_AVALIACAO,
                 -1,
                 Urgencia.ALTA,
-                Fixture.DATA_ENVIO
+                Fixture.DATA_ENVIO,
+                Fixture.DISCIPLINA_ID,
+                Fixture.DISCIPLINA_NOME
         );
 
         assertEquals(-1, dto.nota());

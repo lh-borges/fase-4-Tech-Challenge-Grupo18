@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
  * <p>Agrega as avaliações recebidas entre {@code periodoInicio} e {@code periodoFim},
  * produzindo a média das notas e as contagens necessárias para o relatório semanal
  * (avaliações por dia e por urgência). É persistido como um snapshot do período.</p>
+ *
+ * @author luisbraserv
  */
 @Getter
 public class Feedback {
@@ -31,7 +33,20 @@ public class Feedback {
     private final Map<Urgencia, Long> avaliacoesPorUrgencia;
     private final LocalDateTime geradoEm;
 
-    /** Reconstrução a partir da persistência. */
+    /**
+     * Reconstrói um feedback existente a partir da persistência.
+     *
+     * @param  id  identificador do feedback
+     * @param  periodoInicio  início do período consolidado
+     * @param  periodoFim  fim do período consolidado
+     * @param  mediaNotas  média das notas das avaliações do período
+     * @param  totalAvaliacoes  quantidade total de avaliações consideradas
+     * @param  avaliacoesPorDia  contagem de avaliações agrupadas por dia
+     * @param  avaliacoesPorUrgencia  contagem de avaliações agrupadas por urgência
+     * @param  geradoEm  data e hora em que o feedback foi gerado
+     *
+     * @author luisbraserv
+     */
     public Feedback(UUID id,
                     LocalDateTime periodoInicio,
                     LocalDateTime periodoFim,
@@ -50,6 +65,15 @@ public class Feedback {
         this.geradoEm = geradoEm;
     }
 
+    /**
+     * Constrói um feedback consolidado calculando média e contagens das avaliações.
+     *
+     * @param  periodoInicio  início do período consolidado
+     * @param  periodoFim  fim do período consolidado
+     * @param  avaliacoes  avaliações compreendidas no período
+     *
+     * @author luisbraserv
+     */
     private Feedback(LocalDateTime periodoInicio,
                      LocalDateTime periodoFim,
                      List<Avaliacao> avaliacoes) {
@@ -76,10 +100,14 @@ public class Feedback {
     /**
      * Gera um feedback consolidado a partir das avaliações de um período.
      *
-     * @param periodoInicio início do período (inclusivo)
-     * @param periodoFim    fim do período (inclusivo)
-     * @param avaliacoes    avaliações compreendidas no período
+     * @param  periodoInicio  início do período (inclusivo)
+     * @param  periodoFim  fim do período (inclusivo)
+     * @param  avaliacoes  avaliações compreendidas no período
      * @return feedback consolidado (ainda sem id, atribuído na persistência)
+     *
+     * @throws PeriodoInvalidoException  quando as datas são nulas ou o fim é anterior ao início
+     *
+     * @author luisbraserv
      */
     public static Feedback gerar(LocalDateTime periodoInicio,
                                  LocalDateTime periodoFim,
@@ -93,6 +121,13 @@ public class Feedback {
         return new Feedback(periodoInicio, periodoFim, avaliacoes);
     }
 
+    /**
+     * Define o identificador do feedback após a persistência.
+     *
+     * @param  id  identificador gerado
+     *
+     * @author luisbraserv
+     */
     public void setId(UUID id) {
         this.id = id;
     }

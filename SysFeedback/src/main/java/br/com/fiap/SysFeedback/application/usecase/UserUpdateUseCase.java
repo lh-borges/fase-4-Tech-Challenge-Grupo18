@@ -13,12 +13,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.UUID;
 
+/**
+ * Caso de uso responsável pela atualização de um usuário existente.
+ *
+ * @author Thiago de Jesus
+ */
 public class UserUpdateUseCase {
 
     private final RepositoryUserPort repositoryUserPort;
     private final PasswordEncoderPort passwordEncoderPort;
     private final UserMapper userMapper;
 
+    /**
+     * Cria o caso de uso com suas dependências.
+     *
+     * @param  repositoryUserPort   porta de persistência de usuários
+     * @param  passwordEncoderPort  porta de codificação de senhas
+     *
+     * @author Thiago de Jesus
+     */
     public UserUpdateUseCase(
             RepositoryUserPort repositoryUserPort,
             PasswordEncoderPort passwordEncoderPort,
@@ -29,6 +42,18 @@ public class UserUpdateUseCase {
         this.userMapper = userMapper;
     }
 
+    /**
+     * Atualiza um usuário, aplicando as regras de autorização de acesso.
+     *
+     * @param  id             identificador do usuário a ser atualizado
+     * @param  userUpdateDTO  novos dados do usuário
+     * @return usuário atualizado no formato de resposta
+     *
+     * @throws UserNotFoundException          quando não existe usuário com o id informado
+     * @throws UnauthorizedOperationException quando o usuário logado não tem permissão para alterar o registro
+     *
+     * @author Thiago de Jesus
+     */
     public UserResponseDTO execute(UUID id, UserUpdateDTO userUpdateDTO) {
         User existingUser = repositoryUserPort.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));

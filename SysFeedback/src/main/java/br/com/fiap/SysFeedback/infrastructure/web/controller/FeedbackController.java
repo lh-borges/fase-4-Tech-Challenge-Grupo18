@@ -20,6 +20,8 @@ import java.util.List;
  * </ul>
  *
  * <p>As regras de autorização por role ficam centralizadas no SecurityConfig.</p>
+ *
+ * @author luisbraserv
  */
 @RestController
 @RequestMapping("/feedback")
@@ -29,12 +31,27 @@ public class FeedbackController {
     private final FeedbackGenerateUseCase feedbackGenerateUseCase;
     private final FeedbackFindAllUseCase feedbackFindAllUseCase;
 
+    /**
+     * Gera o feedback consolidado do período informado.
+     *
+     * @param  request  período [inicio, fim] para o qual gerar o feedback
+     * @return resposta 201 com o feedback gerado
+     *
+     * @author luisbraserv
+     */
     @PostMapping
     public ResponseEntity<FeedbackResponseDTO> generate(@Valid @RequestBody FeedbackRequestDTO request) {
         FeedbackResponseDTO response = feedbackGenerateUseCase.execute(request);
         return ResponseEntity.status(201).body(response);
     }
 
+    /**
+     * Lista todos os feedbacks já gerados.
+     *
+     * @return resposta 200 com a lista de feedbacks
+     *
+     * @author luisbraserv
+     */
     @GetMapping
     public ResponseEntity<List<FeedbackResponseDTO>> findAll() {
         List<FeedbackResponseDTO> response = feedbackFindAllUseCase.execute();
