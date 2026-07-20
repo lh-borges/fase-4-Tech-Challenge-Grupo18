@@ -12,15 +12,18 @@ import java.util.List;
 public class FeedbackFindAllUseCase {
 
     private final RepositoryFeedbackPort repositoryFeedbackPort;
+    private final FeedbackMapper feedbackMapper;
 
-    public FeedbackFindAllUseCase(RepositoryFeedbackPort repositoryFeedbackPort) {
+    public FeedbackFindAllUseCase(RepositoryFeedbackPort repositoryFeedbackPort,
+                                  FeedbackMapper feedbackMapper) {
         this.repositoryFeedbackPort = repositoryFeedbackPort;
+        this.feedbackMapper = feedbackMapper;
     }
 
     public List<FeedbackResponseDTO> execute() {
         return repositoryFeedbackPort.findAll()
                 .stream()
-                .map(FeedbackMapper::toResponse)
+                .map(feedbackMapper::toResponse)
                 .toList();
     }
 }

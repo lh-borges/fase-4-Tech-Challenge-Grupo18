@@ -12,14 +12,17 @@ import br.com.fiap.SysFeedback.domain.entity.Avaliacao;
 public class AvaliacaoCreateUseCase {
 
     private final RepositoryAvaliacaoPort repositoryAvaliacaoPort;
+    private final AvaliacaoMapper avaliacaoMapper;
 
-    public AvaliacaoCreateUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort) {
+    public AvaliacaoCreateUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort,
+                                  AvaliacaoMapper avaliacaoMapper) {
         this.repositoryAvaliacaoPort = repositoryAvaliacaoPort;
+        this.avaliacaoMapper = avaliacaoMapper;
     }
 
     public AvaliacaoResponseDTO execute(AvaliacaoRequestDTO request) {
-        Avaliacao avaliacao = AvaliacaoMapper.toDomain(request);
+        Avaliacao avaliacao = avaliacaoMapper.toDomain(request);
         Avaliacao salva = repositoryAvaliacaoPort.save(avaliacao);
-        return AvaliacaoMapper.toResponse(salva);
+        return avaliacaoMapper.toResponse(salva);
     }
 }

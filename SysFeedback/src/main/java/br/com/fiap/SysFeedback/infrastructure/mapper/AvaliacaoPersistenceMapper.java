@@ -2,23 +2,14 @@ package br.com.fiap.SysFeedback.infrastructure.mapper;
 
 import br.com.fiap.SysFeedback.domain.entity.Avaliacao;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.AvaliacaoJpaEntity;
+import org.mapstruct.Mapper;
 
-public class AvaliacaoPersistenceMapper {
+@Mapper(componentModel = "spring")
+public interface AvaliacaoPersistenceMapper {
 
-    public static AvaliacaoJpaEntity toJpa(Avaliacao avaliacao) {
-        if (avaliacao == null) {
-            return null;
-        }
-        return new AvaliacaoJpaEntity(
-                avaliacao.getId(),
-                avaliacao.getDescricao(),
-                avaliacao.getNota(),
-                avaliacao.getUrgencia(),
-                avaliacao.getDataEnvio()
-        );
-    }
+    AvaliacaoJpaEntity toJpa(Avaliacao avaliacao);
 
-    public static Avaliacao toDomain(AvaliacaoJpaEntity entity) {
+    default Avaliacao toDomain(AvaliacaoJpaEntity entity) {
         if (entity == null) {
             return null;
         }

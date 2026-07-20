@@ -28,6 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
+		<archunit.version>1.4.1</archunit.version>
+		<jacoco.version>0.8.13</jacoco.version>
 	</properties>
 
 	<dependencies>
@@ -109,6 +112,21 @@
 		<optional>true</optional>
 	</dependency>
 
+	<!-- MapStruct -->
+	<dependency>
+		<groupId>org.mapstruct</groupId>
+		<artifactId>mapstruct</artifactId>
+		<version>${mapstruct.version}</version>
+	</dependency>
+
+	<!-- ArchUnit -->
+	<dependency>
+		<groupId>com.tngtech.archunit</groupId>
+		<artifactId>archunit-junit5</artifactId>
+		<version>${archunit.version}</version>
+		<scope>test</scope>
+	</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>
@@ -140,8 +158,53 @@
 							<artifactId>lombok</artifactId>
 							<version>${lombok.version}</version>
 						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<useManifestOnlyJar>false</useManifestOnlyJar>
+					<useModulePath>false</useModulePath>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.version}</version>
+				<configuration>
+					<excludes>
+						<exclude>**/*Application.class</exclude>
+						<exclude>**/*MapperImpl.class</exclude>
+						<exclude>br/com/fiap/SysFeedback/infrastructure/web/**/*</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

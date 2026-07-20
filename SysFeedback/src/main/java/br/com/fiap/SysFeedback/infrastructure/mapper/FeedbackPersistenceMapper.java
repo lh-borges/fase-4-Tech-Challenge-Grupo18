@@ -2,12 +2,15 @@ package br.com.fiap.SysFeedback.infrastructure.mapper;
 
 import br.com.fiap.SysFeedback.domain.entity.Feedback;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.FeedbackJpaEntity;
+import org.mapstruct.Mapper;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class FeedbackPersistenceMapper {
+@Mapper(componentModel = "spring")
+public interface FeedbackPersistenceMapper {
 
-    public static FeedbackJpaEntity toJpa(Feedback feedback) {
+    default FeedbackJpaEntity toJpa(Feedback feedback) {
         if (feedback == null) {
             return null;
         }
@@ -23,7 +26,7 @@ public class FeedbackPersistenceMapper {
         return entity;
     }
 
-    public static Feedback toDomain(FeedbackJpaEntity entity) {
+    default Feedback toDomain(FeedbackJpaEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -37,5 +40,12 @@ public class FeedbackPersistenceMapper {
                 new LinkedHashMap<>(entity.getAvaliacoesPorUrgencia()),
                 entity.getGeradoEm()
         );
+    }
+
+    default <K, V> LinkedHashMap<K, V> copyMap(Map<K, V> source) {
+        if (source == null) {
+            return new LinkedHashMap<>();
+        }
+        return new LinkedHashMap<>(source);
     }
 }

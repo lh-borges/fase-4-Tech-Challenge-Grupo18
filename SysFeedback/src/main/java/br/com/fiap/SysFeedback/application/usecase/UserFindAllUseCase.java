@@ -10,15 +10,18 @@ import java.util.List;
 public class UserFindAllUseCase {
 
     private final RepositoryUserPort repositoryUserPort;
+    private final UserMapper userMapper;
 
-    public UserFindAllUseCase(RepositoryUserPort repositoryUserPort) {
+    public UserFindAllUseCase(RepositoryUserPort repositoryUserPort,
+                              UserMapper userMapper) {
         this.repositoryUserPort = repositoryUserPort;
+        this.userMapper = userMapper;
     }
 
     public List<UserResponseDTO> execute() {
         return repositoryUserPort.findAll()
                 .stream()
-                .map(UserMapper::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 }

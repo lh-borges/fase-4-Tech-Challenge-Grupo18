@@ -17,29 +17,30 @@ import java.util.UUID;
 public class UserRepositoryAdapter implements RepositoryUserPort {
 
     private final UserJpaRepository userJpaRepository;
+    private final UserPersistenceMapper userPersistenceMapper;
 
     @Override
     public User save(User user) {
-        UserJpaEntity entity = UserPersistenceMapper.toJpa(user);
+        UserJpaEntity entity = userPersistenceMapper.toJpa(user);
         UserJpaEntity saved = userJpaRepository.save(entity);
-        return UserPersistenceMapper.toDomain(saved);
+        return userPersistenceMapper.toDomain(saved);
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
         return userJpaRepository.findByEmail(email)
-                .map(UserPersistenceMapper::toDomain);
+                .map(userPersistenceMapper::toDomain);
     }
 
     @Override
     public Optional<User> findById(UUID id) {
         return userJpaRepository.findById(id)
-                .map(UserPersistenceMapper::toDomain);
+                .map(userPersistenceMapper::toDomain);
     }
 
     @Override
     public void delete(User user) {
-        UserJpaEntity entity = UserPersistenceMapper.toJpa(user);
+        UserJpaEntity entity = userPersistenceMapper.toJpa(user);
         userJpaRepository.delete(entity);
     }
 
@@ -47,7 +48,7 @@ public class UserRepositoryAdapter implements RepositoryUserPort {
     public List<User> findAll() {
         return userJpaRepository.findAll()
                 .stream()
-                .map(UserPersistenceMapper::toDomain)
+                .map(userPersistenceMapper::toDomain)
                 .toList();
     }
 }

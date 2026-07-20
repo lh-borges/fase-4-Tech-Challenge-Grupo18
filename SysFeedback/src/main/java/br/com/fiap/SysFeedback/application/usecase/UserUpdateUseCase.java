@@ -17,13 +17,16 @@ public class UserUpdateUseCase {
 
     private final RepositoryUserPort repositoryUserPort;
     private final PasswordEncoderPort passwordEncoderPort;
+    private final UserMapper userMapper;
 
     public UserUpdateUseCase(
             RepositoryUserPort repositoryUserPort,
-            PasswordEncoderPort passwordEncoderPort) {
+            PasswordEncoderPort passwordEncoderPort,
+            UserMapper userMapper) {
 
         this.repositoryUserPort = repositoryUserPort;
         this.passwordEncoderPort = passwordEncoderPort;
+        this.userMapper = userMapper;
     }
 
     public UserResponseDTO execute(UUID id, UserUpdateDTO userUpdateDTO) {
@@ -56,6 +59,6 @@ public class UserUpdateUseCase {
         );
 
         User savedUser = repositoryUserPort.save(updatedUser);
-        return UserMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 }

@@ -12,13 +12,16 @@ public class UserCreateUseCase {
 
     private final RepositoryUserPort repositoryUserPort;
     private final PasswordEncoderPort passwordEncoderPort;
+    private final UserMapper userMapper;
 
     public UserCreateUseCase(
             RepositoryUserPort repositoryUserPort,
-            PasswordEncoderPort passwordEncoderPort) {
+            PasswordEncoderPort passwordEncoderPort,
+            UserMapper userMapper) {
 
         this.repositoryUserPort = repositoryUserPort;
         this.passwordEncoderPort = passwordEncoderPort;
+        this.userMapper = userMapper;
     }
 
     public UserResponseDTO execute(UserRequestDTO user) {
@@ -27,7 +30,7 @@ public class UserCreateUseCase {
             throw new EmailAlreadyExistsException(user.email());
         }
 
-        User userEntity = UserMapper.toDomain(user);
+        User userEntity = userMapper.toDomain(user);
 
         userEntity.setPassword(
                 passwordEncoderPort.encode(userEntity.getPassword())
@@ -35,6 +38,6 @@ public class UserCreateUseCase {
 
         User savedUser = repositoryUserPort.save(userEntity);
 
-        return UserMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 }
