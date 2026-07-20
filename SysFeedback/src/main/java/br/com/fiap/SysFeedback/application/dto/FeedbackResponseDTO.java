@@ -10,6 +10,17 @@ import java.util.UUID;
 /**
  * Feedback consolidado retornado ao cliente, com os dados do relatório:
  * média das notas, total, avaliações por dia e avaliações por urgência.
+ *
+ * @param  id  identificador do feedback
+ * @param  periodoInicio  início do período consolidado
+ * @param  periodoFim  fim do período consolidado
+ * @param  mediaNotas  média das notas das avaliações do período
+ * @param  totalAvaliacoes  quantidade total de avaliações consideradas
+ * @param  avaliacoesPorDia  contagem de avaliações agrupadas por dia
+ * @param  avaliacoesPorUrgencia  contagem de avaliações agrupadas por urgência
+ * @param  geradoEm  data e hora em que o feedback foi gerado
+ *
+ * @author luisbraserv
  */
 public record FeedbackResponseDTO(
         UUID id,

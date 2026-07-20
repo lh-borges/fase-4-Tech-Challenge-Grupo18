@@ -10,6 +10,11 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Entidade JPA que representa o usuário persistido na tabela {@code users}.
+ *
+ * @author Thiago de Jesus
+ */
 @Entity
 @Table(name = "users")
 @Getter

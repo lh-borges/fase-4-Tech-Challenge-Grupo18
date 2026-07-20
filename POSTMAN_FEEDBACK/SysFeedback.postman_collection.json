@@ -1,77 +1,45 @@
 {
   "info": {
     "name": "SysFeedback - Tech Challenge Fase 4 (Grupo 18)",
-    "description": "Collection com todos os endpoints da API SysFeedback.\n\nFluxo sugerido:\n1. Auth > Registrar (crie ao menos um usuário ALUNO e um PROFESSOR/ADMIN).\n2. Auth > Login (o token é salvo automaticamente na variável de collection {{token}}).\n3. Chame os demais endpoints — o header Authorization: Bearer {{token}} é herdado automaticamente.\n\nRegras de autorização:\n- POST /avaliacoes -> ALUNO\n- GET /avaliacoes, GET/POST /feedback -> PROFESSOR ou ADMIN\n- /users (POST, GET, DELETE) -> ADMIN | PUT /users -> autenticado",
+    "description": "Collection com todos os endpoints da API SysFeedback.\n\nFluxo sugerido:\n1. Auth > Login (ALUNO/PROFESSOR/ADMIN) — o token é salvo automaticamente na variável {{token}}.\n2. Chame os demais endpoints — o header Authorization: Bearer {{token}} é herdado.\n\nUsuários do seed (senha 123456): aluno@fiap.com, professor@fiap.com, admin@fiap.com.\n\nRegras de autorização:\n- POST /avaliacoes -> ALUNO\n- GET /avaliacoes, GET/POST /feedback -> PROFESSOR ou ADMIN\n- /users (POST, GET, DELETE) -> ADMIN | PUT /users -> autenticado\n- POST /internal/relatorio/semanal -> header X-Internal-Api-Key",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
     "type": "bearer",
     "bearer": [
-      {
-        "key": "token",
-        "value": "{{token}}",
-        "type": "string"
-      }
+      { "key": "token", "value": "{{token}}", "type": "string" }
     ]
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "userId",
-      "value": "",
-      "type": "string"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "internalApiKey", "value": "chave-local-123", "type": "string" }
   ],
   "item": [
     {
       "name": "Auth",
       "item": [
         {
-          "name": "Registrar (ALUNO)",
+          "name": "Registrar (novo usuário)",
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Aluno Teste\",\n  \"email\": \"aluno@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"ALUNO\"\n}"
+              "raw": "{\n  \"name\": \"Novo Aluno\",\n  \"email\": \"novo.aluno@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"ALUNO\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/registrar",
               "host": ["{{baseUrl}}"],
               "path": ["auth", "registrar"]
             },
-            "description": "Registra um usuário. Roles válidas: ADMIN, PROFESSOR, ALUNO."
+            "description": "Registra um usuário. Roles válidas: ADMIN, PROFESSOR, ALUNO. Use um e-mail que ainda não exista (os do seed já estão criados)."
           }
         },
         {
-          "name": "Registrar (ADMIN)",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Admin Teste\",\n  \"email\": \"admin@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/registrar",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "registrar"]
-            }
-          }
-        },
-        {
-          "name": "Login",
+          "name": "Login (ALUNO)",
           "event": [
             {
               "listen": "test",
@@ -79,12 +47,9 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    const body = pm.response.json();",
-                  "    pm.collectionVariables.set('token', body.token);",
-                  "    console.log('Token salvo em {{token}}');",
-                  "} else {",
-                  "    console.log('Login falhou:', pm.response.code);",
-                  "}"
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "    console.log('Token ALUNO salvo em {{token}}');",
+                  "} else { console.log('Login falhou:', pm.response.code); }"
                 ]
               }
             }
@@ -102,7 +67,71 @@
               "host": ["{{baseUrl}}"],
               "path": ["auth", "login"]
             },
-            "description": "Autentica e retorna { token, type }. O token é gravado automaticamente na variável de collection {{token}}."
+            "description": "Autentica como ALUNO e grava o token em {{token}}."
+          }
+        },
+        {
+          "name": "Login (PROFESSOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "    console.log('Token PROFESSOR salvo em {{token}}');",
+                  "} else { console.log('Login falhou:', pm.response.code); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"professor@fiap.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Autentica como PROFESSOR e grava o token em {{token}}."
+          }
+        },
+        {
+          "name": "Login (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "    console.log('Token ADMIN salvo em {{token}}');",
+                  "} else { console.log('Login falhou:', pm.response.code); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fiap.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Autentica como ADMIN e grava o token em {{token}}."
           }
         }
       ]
@@ -117,14 +146,10 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Professor Teste\",\n  \"email\": \"professor@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"PROFESSOR\"\n}"
+              "raw": "{\n  \"name\": \"Novo Professor\",\n  \"email\": \"novo.professor@fiap.com\",\n  \"password\": \"123456\",\n  \"role\": \"PROFESSOR\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"]
-            },
-            "description": "Requer role ADMIN."
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
+            "description": "Requer role ADMIN (faça Login (ADMIN) antes)."
           }
         },
         {
@@ -132,11 +157,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"]
-            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] },
             "description": "Requer role ADMIN."
           }
         },
@@ -167,7 +188,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["users", "{{userId}}"]
             },
-            "description": "Requer usuário autenticado. Defina a variável {{userId}} com o id retornado no registro/listagem."
+            "description": "Requer usuário autenticado. Defina {{userId}} com o id retornado na listagem."
           }
         },
         {
@@ -197,12 +218,8 @@
               "mode": "raw",
               "raw": "{\n  \"descricao\": \"A aula estava confusa e sem exemplos praticos\",\n  \"nota\": 2\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/avaliacoes",
-              "host": ["{{baseUrl}}"],
-              "path": ["avaliacoes"]
-            },
-            "description": "Requer role ALUNO. A urgencia e derivada da nota (0-3 ALTA, 4-6 MEDIA, 7-10 BAIXA) e a data de envio e registrada no servidor. Faca login com um usuario ALUNO antes."
+            "url": { "raw": "{{baseUrl}}/avaliacoes", "host": ["{{baseUrl}}"], "path": ["avaliacoes"] },
+            "description": "Requer role ALUNO. A urgencia e derivada da nota (0-3 ALTA, 4-6 MEDIA, 7-10 BAIXA). Faca Login (ALUNO) antes."
           }
         },
         {
@@ -210,12 +227,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/avaliacoes",
-              "host": ["{{baseUrl}}"],
-              "path": ["avaliacoes"]
-            },
-            "description": "Requer role PROFESSOR ou ADMIN. Faca login com esse perfil antes."
+            "url": { "raw": "{{baseUrl}}/avaliacoes", "host": ["{{baseUrl}}"], "path": ["avaliacoes"] },
+            "description": "Requer role PROFESSOR ou ADMIN."
           }
         }
       ]
@@ -232,12 +245,8 @@
               "mode": "raw",
               "raw": "{\n  \"inicio\": \"2026-07-01T00:00:00\",\n  \"fim\": \"2026-07-31T23:59:59\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/feedback",
-              "host": ["{{baseUrl}}"],
-              "path": ["feedback"]
-            },
-            "description": "Requer role PROFESSOR ou ADMIN. Gera e persiste o consolidado do periodo: media das notas, total, avaliacoes por dia e por urgencia."
+            "url": { "raw": "{{baseUrl}}/feedback", "host": ["{{baseUrl}}"], "path": ["feedback"] },
+            "description": "Requer role PROFESSOR ou ADMIN. Gera e persiste o consolidado do periodo."
           }
         },
         {
@@ -245,12 +254,27 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/feedback",
-              "host": ["{{baseUrl}}"],
-              "path": ["feedback"]
-            },
+            "url": { "raw": "{{baseUrl}}/feedback", "host": ["{{baseUrl}}"], "path": ["feedback"] },
             "description": "Requer role PROFESSOR ou ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interno (máquina-a-máquina)",
+      "item": [
+        {
+          "name": "Relatório semanal (API key)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "X-Internal-Api-Key", "value": "{{internalApiKey}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/internal/relatorio/semanal",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "relatorio", "semanal"]
+            },
+            "description": "Endpoint consumido pela Cloud Function relatorio-semanal. Protegido por API key (header X-Internal-Api-Key = {{internalApiKey}}), sem JWT. Sem parâmetros considera os últimos 7 dias. Retorna média, contagens por dia/urgência e a lista de avaliações."
           }
         }
       ]

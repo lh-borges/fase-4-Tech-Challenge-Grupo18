@@ -1,7 +1,8 @@
 package br.com.fiap.SysFeedback.infrastructure.web.controller;
 
 import br.com.fiap.SysFeedback.application.usecase.AvaliacaoCreateUseCase;
-import br.com.fiap.SysFeedback.application.usecase.AvaliacaoFindAllUseCase;
+import br.com.fiap.SysFeedback.application.repository.RepositoryUserPort;
+import br.com.fiap.SysFeedback.application.usecase.AvaliacaoFindUseCase;
 import br.com.fiap.SysFeedback.domain.exception.AvaliacaoInvalidaException;
 import br.com.fiap.SysFeedback.fixture.Fixture;
 import br.com.fiap.SysFeedback.infrastructure.web.handler.GlobalExceptionHandler;
@@ -9,12 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AvaliacaoControllerTest {
 
     private final AvaliacaoCreateUseCase avaliacaoCreateUseCase = mock(AvaliacaoCreateUseCase.class);
-    private final AvaliacaoFindAllUseCase avaliacaoFindAllUseCase = mock(AvaliacaoFindAllUseCase.class);
+    private final AvaliacaoFindUseCase avaliacaoFindUseCase = mock(AvaliacaoFindUseCase.class);
+    private final RepositoryUserPort repositoryUserPort = mock(RepositoryUserPort.class);
+    private final Authentication authentication = mock(Authentication.class);
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     private MockMvc mockMvc;
@@ -34,17 +40,21 @@ class AvaliacaoControllerTest {
     @BeforeEach
     void setUp() {
         AvaliacaoController controller =
-                new AvaliacaoController(avaliacaoCreateUseCase, avaliacaoFindAllUseCase);
+                new AvaliacaoController(avaliacaoCreateUseCase, avaliacaoFindUseCase, repositoryUserPort);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
+
+        when(authentication.getName()).thenReturn(Fixture.USER_EMAIL);
+        when(repositoryUserPort.findByEmail(Fixture.USER_EMAIL)).thenReturn(Optional.of(Fixture.user()));
     }
 
     @Test
     void deveCriarAvaliacao() throws Exception {
-        when(avaliacaoCreateUseCase.execute(any())).thenReturn(Fixture.avaliacaoResponseDTO());
+        when(avaliacaoCreateUseCase.execute(any(), eq(Fixture.USER_ID))).thenReturn(Fixture.avaliacaoResponseDTO());
 
         mockMvc.perform(post("/avaliacoes")
+                        .principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Fixture.avaliacaoRequestDTOValida())))
                 .andExpect(status().isCreated())
@@ -53,19 +63,20 @@ class AvaliacaoControllerTest {
                 .andExpect(jsonPath("$.nota").value(Fixture.NOTA_AVALIACAO))
                 .andExpect(jsonPath("$.urgencia").value("BAIXA"));
 
-        verify(avaliacaoCreateUseCase).execute(any());
+        verify(avaliacaoCreateUseCase).execute(any(), eq(Fixture.USER_ID));
     }
 
     @Test
     void deveListarAvaliacoes() throws Exception {
-        when(avaliacaoFindAllUseCase.execute()).thenReturn(List.of(Fixture.avaliacaoResponseDTO()));
+        when(avaliacaoFindUseCase.execute(Fixture.USER_ROLE, Fixture.USER_ID, null))
+                .thenReturn(List.of(Fixture.avaliacaoResponseDTO()));
 
-        mockMvc.perform(get("/avaliacoes"))
+        mockMvc.perform(get("/avaliacoes").principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(Fixture.AVALIACAO_ID.toString()))
                 .andExpect(jsonPath("$[0].nota").value(Fixture.NOTA_AVALIACAO));
 
-        verify(avaliacaoFindAllUseCase).execute();
+        verify(avaliacaoFindUseCase).execute(Fixture.USER_ROLE, Fixture.USER_ID, null);
     }
 
     @Test
@@ -81,10 +92,11 @@ class AvaliacaoControllerTest {
 
     @Test
     void deveRetornarBadRequestQuandoUseCaseLancarExcecaoDeDominio() throws Exception {
-        when(avaliacaoCreateUseCase.execute(any()))
+        when(avaliacaoCreateUseCase.execute(any(), eq(Fixture.USER_ID)))
                 .thenThrow(new AvaliacaoInvalidaException("Nota deve estar entre 0 e 10"));
 
         mockMvc.perform(post("/avaliacoes")
+                        .principal(authentication)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Fixture.avaliacaoRequestDTOValida())))
                 .andExpect(status().isBadRequest())
@@ -112,9 +124,10 @@ class AvaliacaoControllerTest {
 
     @Test
     void deveRetornarInternalServerErrorQuandoListagemFalhar() throws Exception {
-        when(avaliacaoFindAllUseCase.execute()).thenThrow(new RuntimeException("Falha ao listar avaliacoes"));
+        when(avaliacaoFindUseCase.execute(Fixture.USER_ROLE, Fixture.USER_ID, null))
+                .thenThrow(new RuntimeException("Falha ao listar avaliacoes"));
 
-        mockMvc.perform(get("/avaliacoes"))
+        mockMvc.perform(get("/avaliacoes").principal(authentication))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Erro interno inesperado"))
                 .andExpect(jsonPath("$.path").value("/avaliacoes"));

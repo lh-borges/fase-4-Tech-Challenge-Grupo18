@@ -13,6 +13,8 @@ import java.util.UUID;
  * <p>Contém a descrição livre e a nota (0 a 10). A urgência é derivada da nota
  * no momento da criação, e a data de envio é registrada automaticamente.
  * Pode ser lida pelo dono (roles PROFESSOR/ADMIN).</p>
+ *
+ * @author luisbraserv
  */
 @Getter
 public class Avaliacao {
@@ -25,19 +27,53 @@ public class Avaliacao {
     private final int nota;
     private final Urgencia urgencia;
     private final LocalDateTime dataEnvio;
+    private final UUID disciplinaId;
+    private final UUID alunoId;
 
-    /** Criação de uma nova avaliação (id gerado na persistência). */
-    public Avaliacao(String descricao, int nota) {
+    /**
+     * Cria uma nova avaliação de uma disciplina, derivando a urgência da nota e
+     * registrando a data de envio.
+     *
+     * @param  descricao  texto livre da avaliação
+     * @param  nota  nota atribuída (0 a 10)
+     * @param  disciplinaId  disciplina avaliada
+     * @param  alunoId  aluno autor da avaliação
+     *
+     * @throws AvaliacaoInvalidaException  quando a descrição é vazia, a nota está fora do intervalo ou falta a disciplina
+     *
+     * @author Danilo Fernando
+     */
+    public Avaliacao(String descricao, int nota, UUID disciplinaId, UUID alunoId) {
         validar(descricao, nota);
+        if (disciplinaId == null) {
+            throw new AvaliacaoInvalidaException("Disciplina é obrigatória");
+        }
 
         this.descricao = descricao;
         this.nota = nota;
         this.urgencia = Urgencia.fromNota(nota);
         this.dataEnvio = LocalDateTime.now();
+        this.disciplinaId = disciplinaId;
+        this.alunoId = alunoId;
     }
 
-    /** Reconstrução a partir da persistência. */
-    public Avaliacao(UUID id, String descricao, int nota, Urgencia urgencia, LocalDateTime dataEnvio) {
+    /**
+     * Reconstrói uma avaliação existente a partir da persistência.
+     *
+     * @param  id  identificador da avaliação
+     * @param  descricao  texto livre da avaliação
+     * @param  nota  nota atribuída (0 a 10)
+     * @param  urgencia  urgência já calculada da avaliação
+     * @param  dataEnvio  data e hora do envio original
+     * @param  disciplinaId  disciplina avaliada
+     * @param  alunoId  aluno autor da avaliação
+     *
+     * @throws AvaliacaoInvalidaException  quando a descrição é vazia ou a nota está fora do intervalo
+     *
+     * @author luisbraserv
+     */
+    public Avaliacao(UUID id, String descricao, int nota, Urgencia urgencia, LocalDateTime dataEnvio,
+                     UUID disciplinaId, UUID alunoId) {
         validar(descricao, nota);
 
         this.id = id;
@@ -45,8 +81,20 @@ public class Avaliacao {
         this.nota = nota;
         this.urgencia = urgencia;
         this.dataEnvio = dataEnvio;
+        this.disciplinaId = disciplinaId;
+        this.alunoId = alunoId;
     }
 
+    /**
+     * Valida a descrição e a nota da avaliação.
+     *
+     * @param  descricao  texto livre da avaliação
+     * @param  nota  nota atribuída (0 a 10)
+     *
+     * @throws AvaliacaoInvalidaException  quando a descrição é vazia ou a nota está fora do intervalo
+     *
+     * @author luisbraserv
+     */
     private void validar(String descricao, int nota) {
         if (descricao == null || descricao.isBlank()) {
             throw new AvaliacaoInvalidaException("Descrição não pode ser vazia");
@@ -56,6 +104,13 @@ public class Avaliacao {
         }
     }
 
+    /**
+     * Define o identificador da avaliação após a persistência.
+     *
+     * @param  id  identificador gerado
+     *
+     * @author luisbraserv
+     */
     public void setId(UUID id) {
         this.id = id;
     }

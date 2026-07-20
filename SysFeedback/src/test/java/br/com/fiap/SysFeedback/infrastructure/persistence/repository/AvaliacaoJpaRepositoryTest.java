@@ -2,6 +2,7 @@ package br.com.fiap.SysFeedback.infrastructure.persistence.repository;
 
 import br.com.fiap.SysFeedback.domain.enums.Urgencia;
 import br.com.fiap.SysFeedback.infrastructure.persistence.entity.AvaliacaoJpaEntity;
+import br.com.fiap.SysFeedback.infrastructure.persistence.entity.DisciplinaJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -26,6 +27,9 @@ class AvaliacaoJpaRepositoryTest {
 
     @Autowired
     private AvaliacaoJpaRepository repository;
+
+    @Autowired
+    private DisciplinaJpaRepository disciplinaRepository;
 
     @Test
     void deveSalvarEListarAvaliacao() {
@@ -113,6 +117,7 @@ class AvaliacaoJpaRepositoryTest {
         entity.setNota(nota);
         entity.setUrgencia(urgencia);
         entity.setDataEnvio(dataEnvio);
+        entity.setDisciplina(disciplinaRepository.save(new DisciplinaJpaEntity("Arquitetura", "ARQ")));
         return entity;
     }
 }

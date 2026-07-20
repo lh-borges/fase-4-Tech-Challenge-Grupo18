@@ -13,6 +13,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST de autenticação responsável pelo registro de novos usuários
+ * e pela emissão de tokens JWT no login.
+ *
+ * @author Thiago de Jesus
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -23,14 +29,28 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    // Registro
+    /**
+     * Registra um novo usuário a partir dos dados informados.
+     *
+     * @param  request  dados de criação do usuário
+     * @return resposta HTTP 201 com os dados do usuário criado
+     *
+     * @author Thiago de Jesus
+     */
     @PostMapping("/registrar")
     public ResponseEntity<UserResponseDTO> register(@Valid @RequestBody UserRequestDTO request) {
         UserResponseDTO user = userCreateUseCase.execute(request);
         return ResponseEntity.status(201).body(user);
     }
 
-    // Login
+    /**
+     * Autentica o usuário e retorna um token JWT em caso de sucesso.
+     *
+     * @param  request  credenciais de login (e-mail e senha)
+     * @return resposta HTTP 200 com o token gerado, ou HTTP 401 em caso de credenciais inválidas
+     *
+     * @author Thiago de Jesus
+     */
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
         try {
@@ -59,7 +79,17 @@ public class AuthController {
         }
     }
 
-    // DTOs
+    /**
+     * DTO de entrada com as credenciais de login.
+     *
+     * @author Thiago de Jesus
+     */
     public record LoginRequest(String email, String password) {}
+
+    /**
+     * DTO de saída com o token JWT emitido e o seu tipo.
+     *
+     * @author Thiago de Jesus
+     */
     public record TokenResponse(String token, String type) {}
 }

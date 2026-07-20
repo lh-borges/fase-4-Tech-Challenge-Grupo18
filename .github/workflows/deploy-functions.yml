@@ -1,0 +1,169 @@
+name: Deploy Cloud Functions
+
+# Deploy automatizado das funcoes serverless (componentes atualizaveis).
+# Dispara apenas quando algo em functions/** muda no main — cada funcao e
+# um componente independente.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'functions/**'
+      - '.github/workflows/deploy-functions.yml'
+
+env:
+  PROJECT_ID: project-bd8cf2f9-c29c-4e0a-875
+  REGION: southamerica-east1
+  APP_URL: https://sysfeedback-service-esdfvnerla-rj.a.run.app
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Prepara o projeto uma unica vez: habilita as APIs e concede a permissao de
+  # leitura dos segredos a service account de runtime das funcoes. Sem isso, o
+  # deploy com --set-secrets falha ("permission denied on secret").
+  # --------------------------------------------------------------------------
+  prepare:
+    name: Preparar projeto (APIs e IAM)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Habilitar APIs necessárias
+        run: |
+          gcloud services enable \
+            run.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com \
+            artifactregistry.googleapis.com pubsub.googleapis.com cloudscheduler.googleapis.com \
+            secretmanager.googleapis.com eventarc.googleapis.com \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Conceder secretAccessor à SA de runtime das funções
+        run: |
+          if [ -n "${{ secrets.GCP_FUNCTIONS_SA }}" ]; then
+            RUNTIME_SA="${{ secrets.GCP_FUNCTIONS_SA }}"
+          else
+            PN=$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)')
+            RUNTIME_SA="${PN}-compute@developer.gserviceaccount.com"
+          fi
+          echo "Service account de runtime: $RUNTIME_SA"
+          for SECRET in smtp-user smtp-password admin-email internal-api-key; do
+            gcloud secrets add-iam-policy-binding "$SECRET" \
+              --member="serviceAccount:${RUNTIME_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --project=${{ env.PROJECT_ID }} \
+              || echo "aviso: não foi possível conceder secretAccessor em $SECRET"
+          done
+
+  # --------------------------------------------------------------------------
+  # Build e deploy de cada funcao (uma por vez na matriz).
+  # --------------------------------------------------------------------------
+  deploy:
+    name: Build e deploy (${{ matrix.name }})
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    strategy:
+      matrix:
+        include:
+          - name: notifica-urgente
+            dir: functions/notifica-urgente
+            topic: feedback-urgente
+            secrets: SMTP_PASSWORD=smtp-password:latest,SMTP_USER=smtp-user:latest,ADMIN_EMAIL=admin-email:latest
+            envvars: ''
+            scheduler: 'false'
+          - name: relatorio-semanal
+            dir: functions/relatorio-semanal
+            topic: relatorio-semanal
+            secrets: SMTP_PASSWORD=smtp-password:latest,SMTP_USER=smtp-user:latest,ADMIN_EMAIL=admin-email:latest,INTERNAL_API_KEY=internal-api-key:latest
+            envvars: 'APP_URL=https://sysfeedback-service-esdfvnerla-rj.a.run.app'
+            scheduler: 'true'
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-functions-${{ hashFiles('functions/**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-functions-
+
+      - name: Build da função (${{ matrix.name }})
+        working-directory: ${{ matrix.dir }}
+        run: mvn -B clean package
+
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Configurar gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Garantir o tópico Pub/Sub
+        run: |
+          gcloud pubsub topics create ${{ matrix.topic }} \
+            --project=${{ env.PROJECT_ID }} || echo "Tópico já existe."
+
+      - name: Deploy da função (Cloud Functions gen2)
+        run: |
+          FLAGS=(
+            --gen2
+            --project=${{ env.PROJECT_ID }}
+            --region=${{ env.REGION }}
+            --runtime=java21
+            --source=${{ matrix.dir }}/target/deployment
+            --entry-point=io.quarkus.gcp.functions.QuarkusCloudEventsFunction
+            --trigger-topic=${{ matrix.topic }}
+            --memory=256Mi
+            --set-secrets=${{ matrix.secrets }}
+            --quiet
+          )
+          if [ -n "${{ matrix.envvars }}" ]; then
+            FLAGS+=(--set-env-vars=${{ matrix.envvars }})
+          fi
+          if [ -n "${{ secrets.GCP_FUNCTIONS_SA }}" ]; then
+            FLAGS+=(--service-account=${{ secrets.GCP_FUNCTIONS_SA }})
+          fi
+          gcloud functions deploy ${{ matrix.name }} "${FLAGS[@]}"
+
+      - name: Agendar o relatório semanal (Cloud Scheduler)
+        if: ${{ matrix.scheduler == 'true' }}
+        run: |
+          # Toda segunda-feira às 08:00 (horário de São Paulo).
+          gcloud scheduler jobs create pubsub relatorio-semanal-trigger \
+            --project=${{ env.PROJECT_ID }} \
+            --location=${{ env.REGION }} \
+            --schedule="0 8 * * 1" \
+            --topic=${{ matrix.topic }} \
+            --message-body="run" \
+            --time-zone="America/Sao_Paulo" \
+          || gcloud scheduler jobs update pubsub relatorio-semanal-trigger \
+            --project=${{ env.PROJECT_ID }} \
+            --location=${{ env.REGION }} \
+            --schedule="0 8 * * 1" \
+            --topic=${{ matrix.topic }} \
+            --message-body="run" \
+            --time-zone="America/Sao_Paulo"

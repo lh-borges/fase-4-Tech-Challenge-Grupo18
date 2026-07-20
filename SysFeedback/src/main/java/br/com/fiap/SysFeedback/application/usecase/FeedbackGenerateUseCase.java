@@ -14,6 +14,8 @@ import java.util.List;
  * Gera um feedback consolidado para o período informado pelo dono
  * (roles PROFESSOR/ADMIN): busca as avaliações do intervalo, calcula a média
  * e as contagens do relatório e persiste o snapshot.
+ *
+ * @author luisbraserv
  */
 public class FeedbackGenerateUseCase {
 
@@ -21,6 +23,14 @@ public class FeedbackGenerateUseCase {
     private final RepositoryFeedbackPort repositoryFeedbackPort;
     private final FeedbackMapper feedbackMapper;
 
+    /**
+     * Cria o caso de uso com suas dependências.
+     *
+     * @param  repositoryAvaliacaoPort  porta de persistência de avaliações
+     * @param  repositoryFeedbackPort  porta de persistência de feedbacks
+     *
+     * @author luisbraserv
+     */
     public FeedbackGenerateUseCase(RepositoryAvaliacaoPort repositoryAvaliacaoPort,
                                    RepositoryFeedbackPort repositoryFeedbackPort,
                                    FeedbackMapper feedbackMapper) {
@@ -29,6 +39,14 @@ public class FeedbackGenerateUseCase {
         this.feedbackMapper = feedbackMapper;
     }
 
+    /**
+     * Gera e persiste o feedback consolidado do período informado.
+     *
+     * @param  request  período [inicio, fim] a consolidar
+     * @return feedback consolidado e persistido
+     *
+     * @author luisbraserv
+     */
     public FeedbackResponseDTO execute(FeedbackRequestDTO request) {
         List<Avaliacao> avaliacoes =
                 repositoryAvaliacaoPort.findByPeriodo(request.inicio(), request.fim());
