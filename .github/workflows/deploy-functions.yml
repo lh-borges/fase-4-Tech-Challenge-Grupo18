@@ -43,8 +43,20 @@ jobs:
           gcloud services enable \
             run.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com \
             artifactregistry.googleapis.com pubsub.googleapis.com cloudscheduler.googleapis.com \
-            secretmanager.googleapis.com eventarc.googleapis.com \
+            secretmanager.googleapis.com eventarc.googleapis.com cloudresourcemanager.googleapis.com \
             --project=${{ env.PROJECT_ID }}
+
+      - name: Conceder permissão de build à SA padrão do Compute
+        run: |
+          PN=$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)')
+          BUILD_SA="${PN}-compute@developer.gserviceaccount.com"
+          echo "Service account usada pelo build das funções: $BUILD_SA"
+          gcloud projects add-iam-policy-binding ${{ env.PROJECT_ID }} \
+            --member="serviceAccount:${BUILD_SA}" \
+            --role="roles/cloudbuild.builds.builder" \
+            --condition=None \
+            --quiet \
+            || echo "aviso: não foi possível conceder roles/cloudbuild.builds.builder para $BUILD_SA"
 
       - name: Conceder secretAccessor à SA de runtime das funções
         run: |
