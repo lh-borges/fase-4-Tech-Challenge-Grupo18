@@ -146,10 +146,11 @@ jobs:
             --project=${{ env.PROJECT_ID }}
             --region=${{ env.REGION }}
             --runtime=java21
-            --source=${{ matrix.dir }}/target/deployment
+            --source=${{ matrix.dir }}
             --entry-point=io.quarkus.gcp.functions.QuarkusCloudEventsFunction
             --trigger-topic=${{ matrix.topic }}
             --memory=256Mi
+            --cpu=1
             --set-secrets=${{ matrix.secrets }}
             --quiet
           )

@@ -14,6 +14,7 @@
     { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
     { "key": "token", "value": "", "type": "string" },
     { "key": "userId", "value": "", "type": "string" },
+    { "key": "disciplinaId", "value": "", "type": "string" },
     { "key": "internalApiKey", "value": "chave-local-123", "type": "string" }
   ],
   "item": [
@@ -207,6 +208,39 @@
       ]
     },
     {
+      "name": "Disciplinas",
+      "item": [
+        {
+          "name": "Listar disciplinas (autenticado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const disciplinas = pm.response.json();",
+                  "    if (Array.isArray(disciplinas) && disciplinas.length > 0) {",
+                  "        pm.collectionVariables.set('disciplinaId', disciplinas[0].id);",
+                  "        console.log('Disciplina salva em {{disciplinaId}}:', disciplinas[0].id);",
+                  "    } else {",
+                  "        console.log('Nenhuma disciplina retornada para este usuário.');",
+                  "    }",
+                  "} else { console.log('Listagem de disciplinas falhou:', pm.response.code); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/disciplinas", "host": ["{{baseUrl}}"], "path": ["disciplinas"] },
+            "description": "Requer usuário autenticado. Use Login (ALUNO) antes para salvar automaticamente uma disciplina do aluno em {{disciplinaId}}."
+          }
+        }
+      ]
+    },
+    {
       "name": "Avaliacoes",
       "item": [
         {
@@ -216,10 +250,10 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"descricao\": \"A aula estava confusa e sem exemplos praticos\",\n  \"nota\": 2\n}"
+              "raw": "{\n  \"descricao\": \"A aula estava confusa e sem exemplos praticos\",\n  \"nota\": 2,\n  \"disciplinaId\": \"{{disciplinaId}}\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/avaliacoes", "host": ["{{baseUrl}}"], "path": ["avaliacoes"] },
-            "description": "Requer role ALUNO. A urgencia e derivada da nota (0-3 ALTA, 4-6 MEDIA, 7-10 BAIXA). Faca Login (ALUNO) antes."
+            "description": "Requer role ALUNO. A urgencia e derivada da nota (0-3 ALTA, 4-6 MEDIA, 7-10 BAIXA). Faca Login (ALUNO) e depois Disciplinas > Listar disciplinas para preencher {{disciplinaId}} antes."
           }
         },
         {
