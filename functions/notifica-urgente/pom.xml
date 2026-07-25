@@ -91,6 +91,27 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-quarkus-runner-to-gcf-expected-jar</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <copy
+                                        file="${project.build.directory}/${project.build.finalName}-runner.jar"
+                                        tofile="${project.build.directory}/${project.build.finalName}.jar"
+                                        overwrite="true"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
