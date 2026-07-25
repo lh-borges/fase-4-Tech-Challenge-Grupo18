@@ -4,16 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>br.com.fiap.sysfeedback</groupId>
+    <groupId>com.tc4</groupId>
     <artifactId>relatorio-semanal</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>relatorio-semanal</name>
-    <description>
-        Cloud Function (GCP, 2ª geração) acionada semanalmente (Cloud Scheduler →
-        Pub/Sub "relatorio-semanal"). Busca o relatório no backend (endpoint interno)
-        e envia por e-mail ao administrador. Construída com Quarkus.
-    </description>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
@@ -23,6 +17,10 @@
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.version>3.15.1</quarkus.platform.version>
+
+        <!-- Propriedades para o GCP encontrar o JAR correto -->
+        <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
+        <quarkus.package.add-runner-suffix>false</quarkus.package.add-runner-suffix>
 
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <surefire-plugin.version>3.5.1</surefire-plugin.version>
@@ -41,22 +39,57 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Runtime de Google Cloud Functions no Quarkus -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-google-cloud-functions</artifactId>
         </dependency>
+
+        <!-- Envio de e-mail (SMTP/Mailer) -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-mailer</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jackson</artifactId>
-        </dependency>
+
+        <!-- CDI e Configurações -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
+
+        <!-- Jackson para injeção do ObjectMapper (Resolve o erro Unsatisfied dependency) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-logging-json</artifactId>
+        </dependency>
+
+        <!-- Google Cloud Storage -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>2.30.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+
+        <!-- API do Functions Framework (necessário se o código usar HttpFunction) -->
+        <dependency>
+            <groupId>com.google.cloud.functions</groupId>
+            <artifactId>functions-framework-api</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
+        <!-- Testes -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -65,6 +98,7 @@
     </dependencies>
 
     <build>
+        <finalName>relatorio-semanal-1.0.0</finalName>
         <plugins>
             <plugin>
                 <groupId>io.quarkus</groupId>
@@ -91,6 +125,10 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
+                <!-- Opcional: pular testes se quiser acelerar o deploy enquanto debuga o build -->
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
             </plugin>
         </plugins>
     </build>

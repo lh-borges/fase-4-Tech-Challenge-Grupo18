@@ -19,6 +19,9 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
+		<quarkus.package.add-runner-suffix>false</quarkus.package.add-runner-suffix>
+
 
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -41,7 +44,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Runtime de Google Cloud Functions no Quarkus (Functions Framework + CloudEvents) -->
+        <!-- Runtime de Google Cloud Functions no Quarkus -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-google-cloud-functions</artifactId>
@@ -74,6 +77,9 @@
     </dependencies>
 
     <build>
+        <!-- Força o nome do JAR para o que o Google Cloud Build espera -->
+        <finalName>notifica-urgente-1.0.0</finalName>
+        
         <plugins>
             <plugin>
                 <groupId>io.quarkus</groupId>
