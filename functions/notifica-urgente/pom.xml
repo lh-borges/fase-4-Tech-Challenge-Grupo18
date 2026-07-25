@@ -19,13 +19,14 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
-		<quarkus.package.add-runner-suffix>false</quarkus.package.add-runner-suffix>
-
 
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.version>3.15.1</quarkus.platform.version>
+
+        <!-- Propriedades cruciais para o GCP encontrar o JAR correto -->
+        <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
+        <quarkus.package.add-runner-suffix>false</quarkus.package.add-runner-suffix>
 
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <surefire-plugin.version>3.5.1</surefire-plugin.version>
@@ -77,7 +78,7 @@
     </dependencies>
 
     <build>
-        <!-- Força o nome do JAR para o que o Google Cloud Build espera -->
+        <!-- Fixa o nome do JAR final -->
         <finalName>notifica-urgente-1.0.0</finalName>
         
         <plugins>
@@ -92,27 +93,6 @@
                             <goal>build</goal>
                             <goal>generate-code</goal>
                             <goal>generate-code-tests</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-quarkus-runner-to-gcf-expected-jar</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <copy
-                                        file="${project.build.directory}/${project.build.finalName}-runner.jar"
-                                        tofile="${project.build.directory}/${project.build.finalName}.jar"
-                                        overwrite="true"/>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>
