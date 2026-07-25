@@ -150,6 +150,7 @@ jobs:
             --entry-point=io.quarkus.gcp.functions.QuarkusCloudEventsFunction
             --trigger-topic=${{ matrix.topic }}
             --memory=256Mi
+            --cpu=1
             --set-secrets=${{ matrix.secrets }}
             --quiet
           )
