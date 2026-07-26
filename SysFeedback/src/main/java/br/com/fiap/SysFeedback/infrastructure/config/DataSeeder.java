@@ -55,12 +55,9 @@ public class DataSeeder {
                                           AvaliacaoJpaRepository avaliacaoRepository,
                                           PasswordEncoder passwordEncoder) {
         return args -> {
-            if (userRepository.count() > 0 || avaliacaoRepository.count() > 0) {
-                return;
-            }
             try {
                 popular(userRepository, disciplinaRepository, avaliacaoRepository, passwordEncoder);
-                log.info("Carga inicial concluída: usuários, disciplinas e avaliações criados.");
+                log.info("Carga inicial verificada: usuários, disciplinas, matrículas e avaliações base disponíveis.");
             } catch (DataIntegrityViolationException e) {
                 // Outra instância populou o banco em paralelo (ex.: cold starts
                 // simultâneos no Cloud Run). Não é fatal: seguimos sem abortar a subida.
@@ -84,32 +81,38 @@ public class DataSeeder {
                          AvaliacaoJpaRepository avaliacaoRepository,
                          PasswordEncoder passwordEncoder) {
 
-        userRepository.save(novoUsuario("Admin Teste", "admin@fiap.com", "123456", Role.ADMIN, passwordEncoder));
+        obterOuCriarUsuario(userRepository, "Admin Teste", "admin@fiap.com", "123456", Role.ADMIN, passwordEncoder);
 
         // Professores: um leciona Arquitetura e Banco de Dados; outro leciona DevOps.
-        UserJpaEntity profArquiteto = userRepository.save(
-                novoUsuario("Professor Arquiteto", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
-        UserJpaEntity profDevops = userRepository.save(
-                novoUsuario("Professora DevOps", "professor.devops@fiap.com", "123456", Role.PROFESSOR, passwordEncoder));
+        UserJpaEntity profArquiteto = obterOuCriarUsuario(
+                userRepository, "Professor Arquiteto", "professor@fiap.com", "123456", Role.PROFESSOR, passwordEncoder);
+        UserJpaEntity profDevops = obterOuCriarUsuario(
+                userRepository, "Professora DevOps", "professor.devops@fiap.com", "123456", Role.PROFESSOR, passwordEncoder);
 
         // Alunos com matrículas diferentes.
-        UserJpaEntity ana = userRepository.save(
-                novoUsuario("Ana Aluna", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder));
-        UserJpaEntity bruno = userRepository.save(
-                novoUsuario("Bruno Aluno", "aluno2@fiap.com", "123456", Role.ALUNO, passwordEncoder));
-        UserJpaEntity carla = userRepository.save(
-                novoUsuario("Carla Aluna", "aluno3@fiap.com", "123456", Role.ALUNO, passwordEncoder));
+        UserJpaEntity ana = obterOuCriarUsuario(
+                userRepository, "Ana Aluna", "aluno@fiap.com", "123456", Role.ALUNO, passwordEncoder);
+        UserJpaEntity bruno = obterOuCriarUsuario(
+                userRepository, "Bruno Aluno", "aluno2@fiap.com", "123456", Role.ALUNO, passwordEncoder);
+        UserJpaEntity carla = obterOuCriarUsuario(
+                userRepository, "Carla Aluna", "aluno3@fiap.com", "123456", Role.ALUNO, passwordEncoder);
 
         // Disciplinas com professores e alunos matriculados.
-        DisciplinaJpaEntity arquitetura = novaDisciplina("Arquitetura de Software", "ARQ",
-                Set.of(profArquiteto), Set.of(ana, bruno));
-        DisciplinaJpaEntity bancoDados = novaDisciplina("Banco de Dados", "BD",
-                Set.of(profArquiteto), Set.of(ana, carla));
-        DisciplinaJpaEntity devops = novaDisciplina("DevOps na Nuvem", "DEVOPS",
-                Set.of(profDevops), Set.of(ana, bruno));
-        disciplinaRepository.save(arquitetura);
-        disciplinaRepository.save(bancoDados);
-        disciplinaRepository.save(devops);
+        DisciplinaJpaEntity arquitetura = obterOuCriarDisciplina(
+                disciplinaRepository, "Arquitetura de Software", "ARQ");
+        vincularDisciplina(disciplinaRepository, arquitetura, Set.of(profArquiteto), Set.of(ana, bruno));
+
+        DisciplinaJpaEntity bancoDados = obterOuCriarDisciplina(
+                disciplinaRepository, "Banco de Dados", "BD");
+        vincularDisciplina(disciplinaRepository, bancoDados, Set.of(profArquiteto), Set.of(ana, carla));
+
+        DisciplinaJpaEntity devops = obterOuCriarDisciplina(
+                disciplinaRepository, "DevOps na Nuvem", "DEVOPS");
+        vincularDisciplina(disciplinaRepository, devops, Set.of(profDevops), Set.of(ana, bruno));
+
+        if (avaliacaoRepository.count() > 0) {
+            return;
+        }
 
         List<AvaliacaoJpaEntity> avaliacoes = new ArrayList<>();
         // Arquitetura de Software (alunos Ana e Bruno)
@@ -135,6 +138,34 @@ public class DataSeeder {
         avaliacoes.add(novaAvaliacao("Adorei os estudos de caso reais", 8, 0, 7, devops, bruno));
 
         avaliacaoRepository.saveAll(avaliacoes);
+    }
+
+    private UserJpaEntity obterOuCriarUsuario(UserJpaRepository userRepository,
+                                              String nome,
+                                              String email,
+                                              String senha,
+                                              Role role,
+                                              PasswordEncoder encoder) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> userRepository.save(novoUsuario(nome, email, senha, role, encoder)));
+    }
+
+    private DisciplinaJpaEntity obterOuCriarDisciplina(DisciplinaJpaRepository disciplinaRepository,
+                                                       String nome,
+                                                       String codigo) {
+        return disciplinaRepository.findAll().stream()
+                .filter(disciplina -> codigo.equals(disciplina.getCodigo()))
+                .findFirst()
+                .orElseGet(() -> disciplinaRepository.save(new DisciplinaJpaEntity(nome, codigo)));
+    }
+
+    private void vincularDisciplina(DisciplinaJpaRepository disciplinaRepository,
+                                    DisciplinaJpaEntity disciplina,
+                                    Set<UserJpaEntity> professores,
+                                    Set<UserJpaEntity> alunos) {
+        disciplina.getProfessores().addAll(professores);
+        disciplina.getAlunos().addAll(alunos);
+        disciplinaRepository.save(disciplina);
     }
 
     /**
