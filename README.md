@@ -1,5 +1,5 @@
 # SysFeedback — Tech Challenge Fase 4 (Grupo 18)
-
+   
 Plataforma de **feedback de aulas** com processamento **serverless** e **mensageria**
 na **Google Cloud Platform**. Alunos avaliam as aulas; o sistema **notifica
 automaticamente** os administradores sobre avaliações críticas e gera um
