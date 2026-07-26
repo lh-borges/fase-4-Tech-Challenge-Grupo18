@@ -53,12 +53,20 @@ os segredos** (passo 2, valores reais) e os papéis da SA de deploy acima.
 
 **SA de runtime das funções** — só lê os segredos que usa:
 ```bash
-gcloud secrets add-iam-policy-binding smtp-password    --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor"
-gcloud secrets add-iam-policy-binding smtp-user        --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor"
-gcloud secrets add-iam-policy-binding admin-email      --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor"
+PROJECT=project-bd8cf2f9-c29c-4e0a-875
+FUNCTIONS_SA=121971359025-compute@developer.gserviceaccount.com
+
+gcloud secrets add-iam-policy-binding smtp-password    --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor" --project=$PROJECT
+gcloud secrets add-iam-policy-binding smtp-user        --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor" --project=$PROJECT
+gcloud secrets add-iam-policy-binding admin-email      --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor" --project=$PROJECT
 # apenas relatorio-semanal:
-gcloud secrets add-iam-policy-binding internal-api-key --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor"
+gcloud secrets add-iam-policy-binding internal-api-key --member="serviceAccount:$FUNCTIONS_SA" --role="roles/secretmanager.secretAccessor" --project=$PROJECT
 ```
+
+Se o deploy falhar com `Permission denied on secret` para a revisão do Cloud Run,
+execute os quatro comandos acima uma vez, ou garanta que a SA de deploy
+(`GCP_SA_EMAIL`) tenha `roles/secretmanager.admin` para o job `prepare` fazer isso
+automaticamente.
 
 **Backend (Cloud Run) — publicar no tópico** de urgência:
 ```bash

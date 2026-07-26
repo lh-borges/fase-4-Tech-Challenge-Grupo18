@@ -60,6 +60,7 @@ jobs:
 
       - name: Conceder secretAccessor à SA de runtime das funções
         run: |
+          set -euo pipefail
           if [ -n "${{ secrets.GCP_FUNCTIONS_SA }}" ]; then
             RUNTIME_SA="${{ secrets.GCP_FUNCTIONS_SA }}"
           else
@@ -68,11 +69,11 @@ jobs:
           fi
           echo "Service account de runtime: $RUNTIME_SA"
           for SECRET in smtp-user smtp-password admin-email internal-api-key; do
+            echo "Concedendo secretAccessor em $SECRET para $RUNTIME_SA"
             gcloud secrets add-iam-policy-binding "$SECRET" \
               --member="serviceAccount:${RUNTIME_SA}" \
               --role="roles/secretmanager.secretAccessor" \
-              --project=${{ env.PROJECT_ID }} \
-              || echo "aviso: não foi possível conceder secretAccessor em $SECRET"
+              --project=${{ env.PROJECT_ID }}
           done
 
   # --------------------------------------------------------------------------
