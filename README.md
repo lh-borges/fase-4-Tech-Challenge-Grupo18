@@ -131,4 +131,4 @@ atrito de múltiplos repositórios. Ver [docs/adr/0004](docs/adr/0004-monorepo.m
 
 ## Vídeo
 
-- **Disponível na raiz do projeto:** 01-16-44.mp4
+- **Disponível na raiz do projeto:** [01-16-44.mp4](https://github.com/lh-borges/fase-4-Tech-Challenge-Grupo18/blob/main/01-16-44.mp4)
