@@ -128,3 +128,7 @@ POSTMAN_FEEDBACK/            # Coleção Postman
 Por que monorepo? A separação de serviços é **arquitetural** (pastas + deploy e IAM
 independentes), o que atende ao critério de "separação de responsabilidades" sem o
 atrito de múltiplos repositórios. Ver [docs/adr/0004](docs/adr/0004-monorepo.md).
+
+## Vídeo
+
+- **Disponível na raiz do projeto:** 01-16-44.mp4
