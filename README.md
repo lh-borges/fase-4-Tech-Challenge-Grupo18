@@ -5,7 +5,7 @@ na **Google Cloud Platform**. Alunos avaliam as aulas; o sistema **notifica
 automaticamente** os administradores sobre avaliações críticas e gera um
 **relatório semanal** com a média das avaliações.
 
-Fase focada em **Cloud Computing, Serverless e Deploy em nuvem**.
+Fase focada em **Cloud Computing, Serverless e Deploy em nuvem**. 
 
 ## Arquitetura
 
